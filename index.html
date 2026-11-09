@@ -11,15 +11,17 @@
   } catch (e) {}
 </script>
 <style>
-  /* Layout: Fluent-style single page. Acrylic top bar, soft mica background, one card-based section per topic. */
+  /* Layout: Fluent-style app with an acrylic top bar and four separate tabs. The map is an illustrated park with pins. */
   :root {
     --bg: #f3f3f3; --bg-tint: #e3f0ea; --surface: rgba(255, 255, 255, .78); --stroke: rgba(0, 0, 0, .08);
     --text: #1a1a1a; --text-2: #5a5a5a; --accent: #0a7a5f; --accent-hover: #086a52; --on-accent: #ffffff;
     --accent-soft: rgba(10, 122, 95, .1); --hover: rgba(0, 0, 0, .05); --acrylic: rgba(249, 249, 249, .72);
     --shadow: 0 1px 2px rgba(0, 0, 0, .05), 0 6px 16px rgba(0, 0, 0, .06);
-    --grass: #cfe5c4; --road: #f6f0e1; --sand: #f3dca6; --leaf: #a9d48f; --tree: #5a9e5f;
-    --water: #a8dcf0; --wave: #3e8fb5; --rock: #c2b5a3; --hut: #ffffff; --here: #c4314b;
-    --line: rgba(0, 0, 0, .2);
+    --halo: #ffffff; --outside: #9dbf8a; --grass: #c9e3ab; --sand: #eed79a; --bamboo: #b5da8e; --forest: #94c47e;
+    --meadow: #dbe9a6; --water: #8ccfe9; --wave: #e9f8ff; --road: #f8f0dd; --road-edge: #cdbb93;
+    --tree: #4f9a58; --tree-2: #2f7d4f; --dry: #8fa84b; --trunk: #7a5a3c; --rock: #b9ab98; --snow: #ffffff;
+    --afrique: #d9822b; --asie: #c43b4e; --ameriques: #2f7d4f; --decouverte: #2a7fb8; --services: #5b5fc7;
+    --here: #c4314b; --land-name: rgba(40, 45, 30, .5);
     --font: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
     --font-display: "Segoe UI Variable Display", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
     color-scheme: light;
@@ -30,9 +32,11 @@
       --text: #f5f5f5; --text-2: #c8c8c8; --accent: #4cd4b0; --accent-hover: #6be0c1; --on-accent: #062a20;
       --accent-soft: rgba(76, 212, 176, .14); --hover: rgba(255, 255, 255, .07); --acrylic: rgba(36, 36, 36, .72);
       --shadow: 0 1px 2px rgba(0, 0, 0, .25), 0 6px 16px rgba(0, 0, 0, .25);
-      --grass: #27382c; --road: #4a4538; --sand: #6b5a33; --leaf: #365c3c; --tree: #5fa868;
-      --water: #27566e; --wave: #8fd3ee; --rock: #6a6154; --hut: #3a3a3a; --here: #ff99a4;
-      --line: rgba(255, 255, 255, .24); color-scheme: dark;
+      --halo: #1c261f; --outside: #16241b; --grass: #2a4630; --sand: #6e5d35; --bamboo: #33603a; --forest: #24523a;
+      --meadow: #47653a; --water: #235a78; --wave: #7fc4e2; --road: #5a5140; --road-edge: #2e2a20;
+      --tree: #4c9457; --tree-2: #3b8552; --dry: #76893f; --trunk: #4e3a28; --rock: #6f6557; --snow: #d9dee2;
+      --afrique: #f0a04b; --asie: #ee6b7e; --ameriques: #5cc486; --decouverte: #5cb3ec; --services: #9a9df0;
+      --here: #ff99a4; --land-name: rgba(255, 255, 255, .5); color-scheme: dark;
     }
   }
   :root[data-theme="dark"] {
@@ -40,27 +44,26 @@
     --text: #f5f5f5; --text-2: #c8c8c8; --accent: #4cd4b0; --accent-hover: #6be0c1; --on-accent: #062a20;
     --accent-soft: rgba(76, 212, 176, .14); --hover: rgba(255, 255, 255, .07); --acrylic: rgba(36, 36, 36, .72);
     --shadow: 0 1px 2px rgba(0, 0, 0, .25), 0 6px 16px rgba(0, 0, 0, .25);
-    --grass: #27382c; --road: #4a4538; --sand: #6b5a33; --leaf: #365c3c; --tree: #5fa868;
-    --water: #27566e; --wave: #8fd3ee; --rock: #6a6154; --hut: #3a3a3a; --here: #ff99a4;
-    --line: rgba(255, 255, 255, .24); color-scheme: dark;
+    --halo: #1c261f; --outside: #16241b; --grass: #2a4630; --sand: #6e5d35; --bamboo: #33603a; --forest: #24523a;
+    --meadow: #47653a; --water: #235a78; --wave: #7fc4e2; --road: #5a5140; --road-edge: #2e2a20;
+    --tree: #4c9457; --tree-2: #3b8552; --dry: #76893f; --trunk: #4e3a28; --rock: #6f6557; --snow: #d9dee2;
+    --afrique: #f0a04b; --asie: #ee6b7e; --ameriques: #5cc486; --decouverte: #5cb3ec; --services: #9a9df0;
+    --here: #ff99a4; --land-name: rgba(255, 255, 255, .5); color-scheme: dark;
   }
 
   *, *::before, *::after { box-sizing: border-box; }
   [hidden] { display: none !important; }
   html { -webkit-text-size-adjust: 100%; }
-  @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
   body {
-    margin: 0; color: var(--text); font: 400 16px/1.5 var(--font);
+    margin: 0; min-height: 100vh; color: var(--text); font: 400 16px/1.5 var(--font);
     background: linear-gradient(170deg, var(--bg-tint), var(--bg) 560px) no-repeat var(--bg);
   }
   h1, h2, h3, p { margin: 0; }
   h1, h2, h3 { font-family: var(--font-display); font-weight: 600; text-wrap: balance; line-height: 1.2; }
   a { color: inherit; }
   :focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
-  .wrap { width: 100%; max-width: 1180px; margin-inline: auto; padding-inline: clamp(16px, 3vw, 32px); }
-  .card {
-    background: var(--surface); border: 1px solid var(--stroke); border-radius: 8px; box-shadow: var(--shadow);
-  }
+  .wrap { width: 100%; max-width: 1280px; margin-inline: auto; padding-inline: clamp(16px, 3vw, 32px); }
+  .card { background: var(--surface); border: 1px solid var(--stroke); border-radius: 8px; box-shadow: var(--shadow); }
 
   /* Top bar */
   .topbar {
@@ -68,127 +71,105 @@
     -webkit-backdrop-filter: blur(24px) saturate(1.4); backdrop-filter: blur(24px) saturate(1.4);
   }
   .bar { display: flex; align-items: center; gap: 8px 24px; min-height: 56px; }
-  .brand {
-    display: flex; align-items: center; gap: 10px; flex: none; text-decoration: none;
-    font: 600 1.05rem/1 var(--font-display); border-radius: 4px;
-  }
+  .brand { display: flex; align-items: center; gap: 10px; flex: none; text-decoration: none; font: 600 1.05rem/1 var(--font-display); border-radius: 4px; }
   .brand svg { width: 28px; height: 28px; display: block; }
   .brand .mark { fill: var(--accent); } .brand .paw { fill: var(--on-accent); }
-  .nav { display: flex; gap: 2px; flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: none; padding-block: 4px; }
-  .nav::-webkit-scrollbar { display: none; }
-  .nav a {
-    position: relative; flex: none; padding: 7px 12px; border-radius: 4px; text-decoration: none; color: var(--text-2);
-    transition: background-color .12s, color .12s;
-  }
-  .nav a:hover { background: var(--hover); color: var(--text); }
-  .nav a[aria-current="true"] { color: var(--text); font-weight: 600; }
-  .nav a[aria-current="true"]::after {
-    content: ""; position: absolute; left: 12px; right: 12px; bottom: 1px; height: 3px;
-    border-radius: 2px; background: var(--accent);
-  }
-  .theme {
-    display: flex; align-items: center; gap: 8px; flex: none; margin-left: auto; padding: 6px 12px; min-height: 34px;
-    color: var(--text); background: var(--surface); border: 1px solid var(--stroke); border-radius: 4px;
-    font: 400 .9rem/1 var(--font); cursor: pointer; transition: background-color .12s;
-  }
+  .tabs { display: flex; gap: 2px; flex: 1; min-width: 0; padding-block: 4px; }
+  .tabs a { position: relative; flex: none; padding: 7px 14px; border-radius: 4px; text-decoration: none; color: var(--text-2); transition: background-color .12s, color .12s; }
+  .tabs a:hover { background: var(--hover); color: var(--text); }
+  .tabs a[aria-current="page"] { color: var(--text); font-weight: 600; }
+  .tabs a[aria-current="page"]::after { content: ""; position: absolute; left: 14px; right: 14px; bottom: 1px; height: 3px; border-radius: 2px; background: var(--accent); }
+  .theme { display: flex; align-items: center; gap: 8px; flex: none; margin-left: auto; padding: 6px 12px; min-height: 34px; color: var(--text); background: var(--surface); border: 1px solid var(--stroke); border-radius: 4px; font: 400 .9rem/1 var(--font); cursor: pointer; transition: background-color .12s; }
   .theme:hover { background: var(--hover); }
   .theme svg { width: 16px; height: 16px; display: block; fill: currentColor; }
   @media (max-width: 760px) {
     .bar { flex-wrap: wrap; padding-block: 8px 0; min-height: 0; }
-    .nav { order: 3; flex: 0 0 100%; }
+    .tabs { order: 3; flex: 0 0 100%; }
+    .tabs a { flex: 1 1 auto; padding: 7px 4px; text-align: center; font-size: .88rem; white-space: nowrap; }
+    .tabs a[aria-current="page"]::after { left: 6px; right: 6px; }
   }
 
-  /* Page and sections */
-  .page { display: grid; gap: 56px; padding-block: 40px 40px; }
-  section { display: grid; gap: 16px; min-width: 0; scroll-margin-top: 112px; }
-  .head h2 { font-size: 1.75rem; }
+  /* Views */
+  .view { display: grid; gap: 20px; padding-block: 28px 32px; min-width: 0; scroll-margin-top: 200px; }
+  .head { display: grid; gap: 2px; }
+  .head h1 { font-size: clamp(1.9rem, 4vw, 2.5rem); }
+  .head h2 { font-size: 1.4rem; }
   .head p { color: var(--text-2); }
 
-  .hero { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 24px 48px; align-items: center; }
-  .hero-text { display: grid; gap: 12px; justify-items: start; }
-  .hero .hello { color: var(--accent); font-weight: 600; }
-  .hero h1 { font-size: clamp(2.5rem, 6vw, 3.75rem); line-height: 1.08; }
-  .hero p.lead { font-size: 1.1rem; color: var(--text-2); max-width: 60ch; }
-  .button {
-    display: inline-block; padding: 9px 20px; border-radius: 4px; text-decoration: none; font-weight: 600;
-    color: var(--on-accent); background: var(--accent); transition: background-color .12s;
-  }
-  .button:hover { background: var(--accent-hover); }
-  .facts { margin: 0; padding: 4px 20px; }
-  .facts div { display: flex; justify-content: space-between; gap: 16px; padding-block: 12px; border-bottom: 1px solid var(--stroke); }
-  .facts div:last-child { border-bottom: 0; }
-  .facts dt { color: var(--text-2); }
-  .facts dd { margin: 0; font-weight: 600; text-align: right; }
-
-  /* Map */
-  .main { display: grid; grid-template-columns: minmax(0, 2.1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+  /* Map tab */
+  .explore { display: grid; grid-template-columns: minmax(0, 2.5fr) minmax(280px, 1fr); gap: 16px; align-items: start; }
   .map-card { padding: 8px; }
-  svg.map { display: block; width: 100%; height: auto; border-radius: 4px; }
-  svg.map text { fill: var(--text); font-family: var(--font); }
-  .s-sand-top { stop-color: color-mix(in srgb, var(--sand), white 24%); } .s-sand { stop-color: var(--sand); }
-  .s-leaf-top { stop-color: color-mix(in srgb, var(--leaf), white 22%); } .s-leaf { stop-color: var(--leaf); }
-  .s-water-top { stop-color: color-mix(in srgb, var(--water), white 26%); } .s-water { stop-color: var(--water); }
-  .ground { fill: var(--grass); }
-  .tuft { fill: var(--tree); opacity: .22; }
-  .road-edge, .road, .road-dots { fill: none; stroke-linecap: round; stroke-linejoin: round; }
-  .road-edge { stroke: var(--line); stroke-width: 25; }
-  .road { stroke: var(--road); stroke-width: 22; }
-  .road-dots { stroke: var(--text); stroke-width: 3; stroke-dasharray: 1 13; opacity: .24; }
-  .plaza { fill: var(--road); stroke: var(--line); stroke-width: 1.5; }
-  .area, .building { stroke: var(--line); stroke-width: 1.5; transition: stroke .12s; }
-  .sand { fill: url(#g-sand); } .leaf { fill: url(#g-leaf); } .water { fill: url(#g-water); }
-  .rock { fill: var(--rock); } .hut { fill: var(--hut); } .tree { fill: var(--tree); }
-  .tree-hi { fill: #fff; opacity: .2; }
-  .wave { fill: none; stroke: var(--wave); stroke-width: 3; stroke-linecap: round; opacity: .75; }
-  svg.map .ico {
-    font-family: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif;
-    font-size: 42px; text-anchor: middle;
-  }
-  svg.map .ico.small { font-size: 34px; }
-  .label { font-size: 26px; font-weight: 600; text-anchor: middle; }
-  .label.small { font-size: 19px; }
-  svg.map .region { font-size: 19px; text-anchor: middle; opacity: .78; }
-  .badge circle { fill: var(--accent); }
-  svg.map .badge text { fill: var(--on-accent); font-size: 17px; font-weight: 600; text-anchor: middle; }
-  .zone { cursor: pointer; outline: none; }
-  .zone:hover .area, .zone:hover .building { stroke: var(--accent); stroke-width: 3; }
-  .zone.on .area, .zone.on .building, .zone:focus-visible .area, .zone:focus-visible .building { stroke: var(--accent); stroke-width: 5; }
+  .map-scroll { border-radius: 4px; overflow: hidden; }
+  svg.map { display: block; width: 100%; height: auto; }
+  svg.map text { font-family: var(--font); }
+  .outside { fill: var(--outside); }
+  .park { fill: var(--grass); stroke: var(--road-edge); stroke-width: 3; }
+  .land-afrique { fill: var(--sand); } .land-asie { fill: var(--bamboo); }
+  .land-ameriques { fill: var(--forest); } .land-decouverte { fill: var(--meadow); }
+  .lake { fill: var(--water); stroke: var(--road-edge); stroke-width: 2; }
+  .wave { fill: none; stroke: var(--wave); stroke-width: 2.5; stroke-linecap: round; opacity: .8; }
+  .road-edge, .road { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  .road-edge { stroke: var(--road-edge); stroke-width: 19; }
+  .road { stroke: var(--road); stroke-width: 15; }
+  svg.map .land-name { fill: var(--land-name); font: 700 30px var(--font-display); letter-spacing: 5px; text-anchor: middle; }
+  .gate-post { fill: none; stroke: var(--trunk); stroke-width: 8; stroke-linecap: round; }
+  .gate-sign { fill: var(--accent); }
+  svg.map .gate-text { fill: var(--on-accent); font-size: 18px; font-weight: 600; text-anchor: middle; }
+  svg.map .outside-text { fill: var(--land-name); font-size: 19px; font-weight: 600; }
+  .shade { fill: #000; opacity: .14; }
+  .trunk { fill: none; stroke: var(--trunk); stroke-width: 4; stroke-linecap: round; }
+  .dry { fill: var(--dry); } .tree { fill: var(--tree); } .pine { fill: var(--tree-2); }
+  .hi { fill: #fff; opacity: .2; }
+  .stem { fill: none; stroke: var(--tree-2); stroke-width: 3.5; stroke-linecap: round; }
+  .bamboo-leaf { fill: var(--tree-2); }
+  .rock { fill: var(--rock); } .snow { fill: var(--snow); }
+  .tuft { fill: none; stroke: var(--tree); stroke-width: 2.5; stroke-linecap: round; opacity: .7; }
+
+  .pin { cursor: pointer; outline: none; transition: opacity .15s; }
+  .pin.dim { opacity: .18; pointer-events: none; }
+  .pin-body { transition: transform .15s; }
+  .pin:hover .pin-body { transform: scale(1.1); }
+  .pin.on .pin-body, .pin:focus-visible .pin-body { transform: scale(1.28); }
+  .pin-head { stroke: #fff; stroke-width: 2.5; filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .35)); }
+  .pin-disc { fill: #fff; }
+  svg.map .pin-icon { font-family: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif; font-size: 22px; text-anchor: middle; }
+  svg.map .pin-label { fill: var(--text); stroke: var(--halo); stroke-width: 5px; stroke-linejoin: round; paint-order: stroke; font-size: 19px; font-weight: 600; text-anchor: middle; }
+  .pin.on .pin-label { fill: var(--accent); }
+  .cat-afrique { fill: var(--afrique); color: var(--afrique); } .cat-asie { fill: var(--asie); color: var(--asie); }
+  .cat-ameriques { fill: var(--ameriques); color: var(--ameriques); } .cat-decouverte { fill: var(--decouverte); color: var(--decouverte); }
+  .cat-services { fill: var(--services); color: var(--services); }
   .here, .here-ring { fill: var(--here); }
   .here-ring { opacity: .35; transform-box: fill-box; transform-origin: center; animation: here-pulse 2.2s ease-out infinite; }
   @keyframes here-pulse { from { transform: scale(1); opacity: .45; } to { transform: scale(2.3); opacity: 0; } }
-  @media (prefers-reduced-motion: reduce) { .here-ring { animation: none; } }
-  svg.map .here-text { fill: var(--here); font-size: 21px; font-weight: 600; }
-  .hours { font-size: 20px; text-anchor: end; }
+  svg.map .here-text { fill: var(--here); stroke: var(--halo); stroke-width: 4px; paint-order: stroke; font-size: 19px; font-weight: 600; }
 
-  .info { padding: 20px; }
-  .info h3 { font-size: 1.6rem; }
-  .where { margin: 4px 0 14px; color: var(--accent); font-weight: 600; }
-  .info ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; font-size: 1.05rem; }
+  .side { display: grid; gap: 12px; min-width: 0; }
+  .info { padding: 18px 20px; }
+  .info h2 { font-size: 1.5rem; }
+  .where { margin: 2px 0 10px; color: var(--accent); font-weight: 600; }
+  .info ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; }
+  .finder { padding: 12px; display: grid; gap: 10px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; background: transparent; color: var(--text); border: 1px solid var(--stroke); border-radius: 13px; font: 400 .85rem/1.3 var(--font); cursor: pointer; transition: background-color .12s; }
+  .chip:hover { background: var(--hover); }
+  .chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 600; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: currentColor; }
+  .chip[aria-pressed="true"] .dot { color: var(--on-accent) !important; }
+  #place-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px; }
+  #place-list button { width: 100%; display: flex; align-items: center; gap: 8px; padding: 5px 8px; text-align: left; background: transparent; color: var(--text); border: 0; border-radius: 4px; font: 400 .9rem/1.2 var(--font); cursor: pointer; transition: background-color .12s; }
+  #place-list button:hover { background: var(--hover); }
+  #place-list button[aria-pressed="true"] { background: var(--accent-soft); font-weight: 600; }
+  #place-list .dot { flex: none; }
 
-  .key { padding: 8px; }
-  .key ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 160px), 1fr)); }
-  .key button {
-    width: 100%; display: flex; align-items: center; gap: 10px; padding: 6px 8px; text-align: left;
-    background: transparent; color: var(--text); border: 0; border-radius: 4px;
-    font: 400 .95rem/1.2 var(--font); cursor: pointer; transition: background-color .12s;
-  }
-  .key button:hover { background: var(--hover); }
-  .key button[aria-pressed="true"] { background: var(--accent-soft); font-weight: 600; }
-  .num {
-    flex: none; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center;
-    background: var(--accent); color: var(--on-accent); font-size: .8rem; font-weight: 600; font-variant-numeric: tabular-nums;
-  }
-
-  /* Animals */
+  /* Other tabs */
   .parts { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); }
   .part { padding: 20px; display: grid; gap: 8px; align-content: start; }
-  .part h3 { font-size: 1.25rem; }
+  .part h2 { font-size: 1.25rem; display: flex; align-items: center; gap: 8px; }
   .part p { color: var(--text-2); }
-  .chips { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
-  .chips li { padding: 3px 10px; border-radius: 12px; background: var(--accent-soft); font-size: .92rem; }
-
-  /* Schedule and hours */
-  .duo { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr); gap: 56px 24px; align-items: start; }
+  .tags { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+  .tags li { padding: 3px 10px; border-radius: 12px; background: var(--accent-soft); font-size: .92rem; }
+  .duo { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr); gap: 32px 24px; align-items: start; }
+  .block { display: grid; gap: 12px; min-width: 0; }
   .times { list-style: none; margin: 0; padding: 4px 20px; }
   .times li { display: grid; grid-template-columns: 5em minmax(0, 1fr); gap: 8px; padding-block: 12px; border-bottom: 1px solid var(--stroke); }
   .times li:last-child { border-bottom: 0; }
@@ -200,23 +181,24 @@
   th { color: var(--text-2); font-weight: 600; font-size: .9rem; }
   th:last-child, td:last-child { padding-right: 0; }
   .t { white-space: nowrap; font-variant-numeric: tabular-nums; }
-
-  /* Events */
   .events { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); }
   .events li { padding: 16px 20px; display: grid; gap: 2px; align-content: start; min-width: 0; }
   .events span { color: var(--accent); font-size: .9rem; font-weight: 600; }
   .events strong { font: 600 1.1rem/1.3 var(--font-display); }
   .events p { color: var(--text-2); }
+  footer { border-top: 1px solid var(--stroke); padding-block: 16px 24px; color: var(--text-2); font-size: .9rem; }
 
-  footer { border-top: 1px solid var(--stroke); padding-block: 20px 28px; }
-  footer p:first-child { font-weight: 600; }
-  footer p + p { color: var(--text-2); font-size: .9rem; }
-
-  @media (max-width: 860px) {
-    .hero, .main, .duo { grid-template-columns: minmax(0, 1fr); }
+  @media (max-width: 960px) { .explore, .duo { grid-template-columns: minmax(0, 1fr); } }
+  @media (max-width: 640px) {
+    svg.map .pin-label { display: none; font-size: 34px; }
+    svg.map .pin.on .pin-label { display: block; }
+    svg.map .here-text, svg.map .outside-text { font-size: 28px; }
+    svg.map .land-name { font-size: 36px; letter-spacing: 3px; }
+    svg.map .outside-text { display: none; }
   }
   @media (prefers-reduced-motion: reduce) {
-    .nav a, .theme, .button, .key button, .area, .building { transition: none; }
+    .here-ring { animation: none; }
+    .tabs a, .theme, .chip, .pin, .pin-body, #place-list button { transition: none; }
   }
 </style>
 </head>
@@ -224,280 +206,171 @@
 
 <header class="topbar">
   <div class="wrap bar">
-    <a class="brand" href="#accueil">
+    <a class="brand" href="#carte">
       <svg viewBox="0 0 28 28" aria-hidden="true">
         <rect class="mark" width="28" height="28" rx="6"/>
-        <g class="paw">
-          <ellipse cx="14" cy="18" rx="5.2" ry="4.2"/>
-          <circle cx="7.6" cy="13.4" r="2.1"/><circle cx="11.6" cy="9" r="2.2"/>
-          <circle cx="16.4" cy="9" r="2.2"/><circle cx="20.4" cy="13.4" r="2.1"/>
-        </g>
+        <g class="paw"><ellipse cx="14" cy="18" rx="5.2" ry="4.2"/><circle cx="7.6" cy="13.4" r="2.1"/><circle cx="11.6" cy="9" r="2.2"/><circle cx="16.4" cy="9" r="2.2"/><circle cx="20.400" cy="13.400" r="2.1"/></g>
       </svg>
       Mon Petit Zoo
     </a>
-    <nav class="nav" aria-label="Les sections">
+    <nav class="tabs" aria-label="Les pages">
       <a href="#carte">La carte</a>
       <a href="#animaux">Les animaux</a>
       <a href="#programme">Le programme</a>
-      <a href="#heures">Les heures</a>
       <a href="#fetes">Les fêtes</a>
     </nav>
     <button class="theme" id="theme" type="button">
-      <svg id="icon-moon" viewBox="0 0 16 16" aria-hidden="true"><path d="M6.2 1.2a6.9 6.9 0 1 0 8.6 8.6.6.6 0 0 0-.8-.7A5.6 5.6 0 0 1 6.9 2a.6.6 0 0 0-.7-.8z"/></svg>
-      <svg id="icon-sun" viewBox="0 0 16 16" aria-hidden="true" hidden><circle cx="8" cy="8" r="3.2"/><path d="M7.4 1h1.2v2.2H7.4zM7.4 12.8h1.2V15H7.4zM1 7.4h2.2v1.2H1zM12.8 7.4H15v1.2h-2.2zM3 2.2l1.6 1.6-.8.8L2.200 3zM12.2 11.4l1.6 1.6-.8.8-1.6-1.6zM13 2.200l.8.8-1.600 1.600-.8-.8zM3.800 11.400l.8.8L3 13.800l-.8-.8z"/></svg>
+      <svg id="icon-moon" viewBox="0 0 16 16" aria-hidden="true"><path d="M6.2 1.2a6.9 6.9 0 1 0 8.6 8.6.6.6 0 0 0-.8-.7A5.6 5.6 0 0 1 6.900 2a.6.6 0 0 0-.7-.8z"/></svg>
+      <svg id="icon-sun" viewBox="0 0 16 16" aria-hidden="true" hidden><circle cx="8" cy="8" r="3.2"/><path d="M7.400 1h1.200v2.200H7.400zM7.400 12.800h1.200V15H7.400zM1 7.400h2.200v1.200H1zM12.800 7.400H15v1.200h-2.200zM3 2.200l1.600 1.600-.8.8L2.200 3zM12.200 11.400l1.600 1.600-.8.8-1.600-1.600zM13 2.200l.8.8-1.600 1.600-.8-.8zM3.800 11.400l.8.8L3 13.800l-.8-.8z"/></svg>
       <span id="theme-label">Mode sombre</span>
     </button>
   </div>
 </header>
 
-<main class="wrap page">
-  <section class="hero" id="accueil">
-    <div class="hero-text">
-      <p class="hello">Bonjour !</p>
-      <h1>Mon Petit Zoo</h1>
-      <p class="lead">Voici la carte du zoo. Clique sur un animal. Mon zoo est inspiré du Zoo de Magnetic Hill, à Moncton.</p>
-      <a class="button" href="#carte">Voir la carte</a>
-    </div>
-    <dl class="card facts">
-      <div><dt>Le zoo a</dt><dd>4 parties</dd></div>
-      <div><dt>Il y a</dt><dd>plus de 60 espèces</dd></div>
-      <div><dt>En été, ouvert</dt><dd>9 h à 17 h</dd></div>
-      <div><dt>Fermé</dt><dd>mardi et mercredi</dd></div>
-    </dl>
-  </section>
-
-  <section id="carte">
+<main class="wrap">
+  <section class="view" id="carte">
     <div class="head">
-      <h2>La carte</h2>
-      <p>Clique sur un numéro. Tu es à l'entrée.</p>
+      <h1>La carte</h1>
+      <p>Bonjour ! Clique sur un animal. Mon zoo est inspiré du Zoo de Magnetic Hill, à Moncton.</p>
     </div>
-    <div class="main">
+    <div class="explore">
       <div class="card map-card">
-    <svg class="map" viewBox="0 0 800 645" role="group" aria-label="La carte du zoo">
-      <defs>
-        <linearGradient id="g-sand" x1="0" y1="0" x2="0" y2="1"><stop class="s-sand-top" offset="0"/><stop class="s-sand" offset="1"/></linearGradient>
-        <linearGradient id="g-leaf" x1="0" y1="0" x2="0" y2="1"><stop class="s-leaf-top" offset="0"/><stop class="s-leaf" offset="1"/></linearGradient>
-        <linearGradient id="g-water" x1="0" y1="0" x2="0" y2="1"><stop class="s-water-top" offset="0"/><stop class="s-water" offset="1"/></linearGradient>
-        <pattern id="tufts" width="46" height="46" patternUnits="userSpaceOnUse">
-          <circle class="tuft" cx="10" cy="12" r="2"/><circle class="tuft" cx="32" cy="30" r="1.6"/>
-        </pattern>
-        <filter id="soft" x="-10%" y="-10%" width="120%" height="125%">
-          <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000" flood-opacity=".2"/>
-        </filter>
-        <g id="canopy"><circle class="tree" r="20"/><circle class="tree-hi" cx="-6" cy="-6" r="9"/></g>
-      </defs>
+        <div class="map-scroll">
+          <svg class="map" id="map" viewBox="0 0 1000 720" role="group" aria-label="La carte du zoo">
+            <defs>
+              <pattern id="tufts" width="60" height="60" patternUnits="userSpaceOnUse"><path class="tuft" d="M12 20l-3-7M12 20v-8M12 20l3-7M44 48l-3-6M44 48v-7M44 48l3-6"/></pattern>
+              <filter id="soft" x="-5%" y="-5%" width="110%" height="115%"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000" flood-opacity=".25"/></filter>
+              <g id="s-acacia"><ellipse class="shade" cy="2" rx="22" ry="5"/><path class="trunk" d="M0 0V-22M0-14L-13-28M0-14L13-28"/><ellipse class="dry" cy="-33" rx="32" ry="11"/><ellipse class="hi" cx="-7" cy="-37" rx="15" ry="4"/></g>
+              <g id="s-round"><ellipse class="shade" cy="2" rx="18" ry="5"/><path class="trunk" d="M0 0V-14"/><circle class="tree" cy="-28" r="20"/><circle class="hi" cx="-6" cy="-35" r="8"/></g>
+              <g id="s-pine"><ellipse class="shade" cy="2" rx="16" ry="4"/><path class="trunk" d="M0 0V-10"/><path class="pine" d="M0-62L15-36H8L21-10H-21L-8-36H-15Z"/></g>
+              <g id="s-bamboo"><path class="stem" d="M-8 0V-52M0 0V-64M8 0V-48"/><path class="bamboo-leaf" d="M-8-40q-14-3-17 3q11 5 17-3M0-52q14-3 17 3q-11 5-17-3M8-32q13-3 15 3q-10 5-15-3M0-30q-12-3-14 3q9 4 14-3"/></g>
+              <g id="s-mountain"><path class="rock" d="M-54 0L-16-54L0-34L20-66L60 0Z"/><path class="snow" d="M20-66L8-46L17-41L24-47L32-41L34-44ZM-16-54L-26-40L-18-37L-11-42Z"/></g>
+              <g id="s-rock"><ellipse class="shade" cy="2" rx="18" ry="4"/><path class="rock" d="M-17 1C-18-12-6-20 3-18C13-16 19-8 17 1Z"/></g>
+            </defs>
 
-      <rect class="ground" width="800" height="645"/>
-      <rect fill="url(#tufts)" width="800" height="645"/>
+            <rect class="outside" width="1000" height="720"/>
+            <path class="park" filter="url(#soft)" d="M120 80C260 18 520 28 700 44C865 60 972 130 972 290C972 430 956 562 830 622C722 674 600 640 500 652C380 664 240 692 128 622C28 560 24 420 36 290C44 190 60 112 120 80Z"/>
+            <rect fill="url(#tufts)" x="40" y="40" width="920" height="620" opacity=".55" clip-path="url(#park-clip)"/>
+            <clipPath id="park-clip"><path d="M120 80C260 18 520 28 700 44C865 60 972 130 972 290C972 430 956 562 830 622C722 674 600 640 500 652C380 664 240 692 128 622C28 560 24 420 36 290C44 190 60 112 120 80Z"/></clipPath>
 
-      <path class="road-edge" d="M24 267a40 40 0 0 1 40-40H736a40 40 0 0 1 40 40V390a40 40 0 0 1-40 40H64a40 40 0 0 1-40-40ZM400 227V600"/>
-      <path class="road" d="M24 267a40 40 0 0 1 40-40H736a40 40 0 0 1 40 40V390a40 40 0 0 1-40 40H64a40 40 0 0 1-40-40ZM400 227V600"/>
-      <path class="road-dots" d="M24 267a40 40 0 0 1 40-40H736a40 40 0 0 1 40 40V390a40 40 0 0 1-40 40H64a40 40 0 0 1-40-40ZM400 227V600"/>
-      <circle class="plaza" cx="400" cy="430" r="24"/>
-      <circle class="water" cx="400" cy="430" r="11"/>
+            <path class="land-afrique" d="M95 125C200 62 400 60 510 92C545 150 500 238 440 278C340 322 210 334 118 328C68 272 58 178 95 125Z"/>
+            <path class="land-asie" d="M590 86C702 70 852 98 918 170C938 240 908 308 832 322C742 338 640 302 585 246C553 190 553 124 590 86Z"/>
+            <path class="land-ameriques" d="M90 388C170 370 322 376 422 422C446 472 422 556 356 602C270 642 170 628 110 582C64 522 60 442 90 388Z"/>
+            <path class="land-decouverte" d="M600 422C690 382 822 370 908 396C932 470 906 552 822 592C740 628 640 602 590 562C558 510 564 452 600 422Z"/>
 
-      <use href="#canopy" transform="translate(272 62) scale(.42)"/>
-      <use href="#canopy" transform="translate(272 165) scale(.5)"/>
-      <use href="#canopy" transform="translate(528 95) scale(.5)"/>
-      <use href="#canopy" transform="translate(528 180) scale(.4)"/>
-      <use href="#canopy" transform="translate(595 512) scale(.4)"/>
-      <use href="#canopy" transform="translate(150 16) scale(.32)"/>
-      <use href="#canopy" transform="translate(650 16) scale(.32)"/>
+            <path class="lake" d="M440 322C480 296 560 296 586 326C612 356 582 398 530 402C480 406 430 386 425 356C423 342 430 330 440 322Z"/>
+            <path class="wave" d="M462 340q10-8 20 0t20 0M520 372q10-8 20 0t20 0M470 382q8-6 16 0t16 0"/>
 
-      <!-- 1 Lions -->
-      <g class="zone" data-id="lions" tabindex="0" role="button">
-        <rect class="area sand" filter="url(#soft)" x="40" y="35" width="215" height="165" rx="18"/>
-        <ellipse class="rock" cx="218" cy="176" rx="24" ry="13"/>
-        <ellipse class="rock" cx="74" cy="178" rx="15" ry="9"/>
-        <text class="ico" x="147" y="100">🦁</text>
-        <text class="label" x="147" y="140">Les lions</text>
-        <text class="region" x="147" y="164">Afrique</text>
-        <g class="badge"><circle cx="66" cy="60" r="15"/><text x="66" y="66">1</text></g>
-      </g>
+            <path class="road-edge" d="M500 655C495 600 510 540 500 470C400 465 340 440 250 468C180 492 170 560 250 575C320 585 392 520 380 450C370 380 300 350 240 300C170 240 160 170 250 150C330 135 430 150 440 215C445 262 480 288 520 278C570 266 590 215 660 175C730 140 850 170 850 240C850 300 760 310 700 345C640 380 640 420 690 470C740 520 830 530 850 470C860 430 760 420 680 445C610 465 560 470 500 470"/>
+            <path class="road" d="M500 655C495 600 510 540 500 470C400 465 340 440 250 468C180 492 170 560 250 575C320 585 392 520 380 450C370 380 300 350 240 300C170 240 160 170 250 150C330 135 430 150 440 215C445 262 480 288 520 278C570 266 590 215 660 175C730 140 850 170 850 240C850 300 760 310 700 345C640 380 640 420 690 470C740 520 830 530 850 470C860 430 760 420 680 445C610 465 560 470 500 470"/>
 
-      <!-- 2 Singes -->
-      <g class="zone" data-id="singes" tabindex="0" role="button">
-        <rect class="area leaf" filter="url(#soft)" x="290" y="35" width="220" height="165" rx="18"/>
-        <use href="#canopy" transform="translate(325 170) scale(.72)"/>
-        <use href="#canopy" transform="translate(476 168) scale(.8)"/>
-        <use href="#canopy" transform="translate(474 68) scale(.78)"/>
-        <text class="ico" x="400" y="100">🐒</text>
-        <text class="label" x="400" y="140">Les singes</text>
-        <text class="region" x="400" y="164">Afrique</text>
-        <g class="badge"><circle cx="316" cy="60" r="15"/><text x="316" y="66">2</text></g>
-      </g>
+            <g id="decor"></g>
 
-      <!-- 3 Autruches -->
-      <g class="zone" data-id="autruches" tabindex="0" role="button">
-        <rect class="area sand" filter="url(#soft)" x="545" y="35" width="215" height="165" rx="18"/>
-        <use href="#canopy" transform="translate(724 70)"/>
-        <use href="#canopy" transform="translate(585 176) scale(.62)"/>
-        <text class="ico" x="652" y="100">🐦</text>
-        <text class="label" x="652" y="140">Les autruches</text>
-        <text class="region" x="652" y="164">Afrique</text>
-        <g class="badge"><circle cx="571" cy="60" r="15"/><text x="571" y="66">3</text></g>
-      </g>
+            <text class="land-name" x="270" y="312">AFRIQUE</text>
+            <text class="land-name" x="752" y="120">ASIE</text>
+            <text class="land-name" x="255" y="618">AMÉRIQUES</text>
+            <text class="land-name" x="745" y="590">DÉCOUVERTE</text>
 
-      <!-- 4 Tigres -->
-      <g class="zone" data-id="tigres" tabindex="0" role="button">
-        <rect class="area sand" filter="url(#soft)" x="40" y="255" width="215" height="147" rx="18"/>
-        <ellipse class="water" cx="222" cy="378" rx="26" ry="14"/>
-        <use href="#canopy" transform="translate(224 288) scale(.6)"/>
-        <text class="ico" x="147" y="312">🐅</text>
-        <text class="label" x="147" y="350">Les tigres</text>
-        <text class="region" x="147" y="373">Asie</text>
-        <g class="badge"><circle cx="66" cy="280" r="15"/><text x="66" y="286">4</text></g>
-      </g>
+            <path class="gate-post" d="M462 678V642M538 678V642"/>
+            <rect class="gate-sign" x="450" y="626" width="100" height="28" rx="6"/>
+            <text class="gate-text" x="500" y="646">Entrée</text>
+            <g id="pins"></g>
 
-      <!-- 5 Restaurant -->
-      <g class="zone" data-id="restaurant" tabindex="0" role="button">
-        <rect class="building hut" filter="url(#soft)" x="275" y="258" width="110" height="140" rx="10"/>
-        <text class="ico small" x="330" y="338">🍽️</text>
-        <text class="label small" x="330" y="374">Restaurant</text>
-        <g class="badge"><circle cx="298" cy="282" r="15"/><text x="298" y="288">5</text></g>
-      </g>
-
-      <!-- 6 Toilettes -->
-      <g class="zone" data-id="toilettes" tabindex="0" role="button">
-        <rect class="building hut" filter="url(#soft)" x="415" y="258" width="110" height="140" rx="10"/>
-        <text class="ico small" x="470" y="338">🚻</text>
-        <text class="label small" x="470" y="374">Toilettes</text>
-        <g class="badge"><circle cx="438" cy="282" r="15"/><text x="438" y="288">6</text></g>
-      </g>
-
-      <!-- 7 Loutres -->
-      <g class="zone" data-id="loutres" tabindex="0" role="button">
-        <rect class="area water" filter="url(#soft)" x="545" y="255" width="215" height="147" rx="18"/>
-        <path class="wave" d="M706 288q10-10 20 0t20 0"/>
-        <path class="wave" d="M706 386q10-10 20 0t20 0"/>
-        <path class="wave" d="M558 386q10-10 20 0t20 0"/>
-        <text class="ico" x="652" y="312">🦦</text>
-        <text class="label" x="652" y="350">Les loutres</text>
-        <text class="region" x="652" y="373">Découverte</text>
-        <g class="badge"><circle cx="571" cy="280" r="15"/><text x="571" y="286">7</text></g>
-      </g>
-
-      <!-- 8 Ours -->
-      <g class="zone" data-id="ours" tabindex="0" role="button">
-        <rect class="area leaf" filter="url(#soft)" x="40" y="458" width="335" height="122" rx="18"/>
-        <use href="#canopy" transform="translate(330 500)"/>
-        <use href="#canopy" transform="translate(92 548) scale(.8)"/>
-        <ellipse class="rock" cx="295" cy="556" rx="22" ry="12"/>
-        <text class="ico" x="205" y="505">🐻</text>
-        <text class="label" x="205" y="541">Les ours</text>
-        <text class="region" x="205" y="564">Amériques</text>
-        <g class="badge"><circle cx="66" cy="483" r="15"/><text x="66" y="489">8</text></g>
-      </g>
-
-      <!-- 9 Boutique -->
-      <g class="zone" data-id="boutique" tabindex="0" role="button">
-        <rect class="building hut" filter="url(#soft)" x="425" y="458" width="160" height="122" rx="10"/>
-        <text class="ico small" x="505" y="524">🎁</text>
-        <text class="label small" x="505" y="560">Boutique</text>
-        <g class="badge"><circle cx="448" cy="482" r="15"/><text x="448" y="488">9</text></g>
-      </g>
-
-      <!-- 10 Jeux -->
-      <g class="zone" data-id="parc" tabindex="0" role="button">
-        <rect class="area leaf" filter="url(#soft)" x="605" y="458" width="155" height="122" rx="18"/>
-        <use href="#canopy" transform="translate(733 486) scale(.62)"/>
-        <text class="ico small" x="682" y="524">🎠</text>
-        <text class="label" x="682" y="562">Les jeux</text>
-        <g class="badge"><circle cx="631" cy="483" r="15"/><text x="631" y="489">10</text></g>
-      </g>
-
-      <!-- 11 Entrée -->
-      <g class="zone" data-id="entree" tabindex="0" role="button">
-        <rect class="building hut" filter="url(#soft)" x="340" y="595" width="120" height="40" rx="10"/>
-        <text class="label small" x="412" y="622">Entrée</text>
-        <g class="badge"><circle cx="360" cy="615" r="14"/><text x="360" y="621">11</text></g>
-      </g>
-
-      <text class="hours" x="325" y="622">En été : 9 h à 17 h</text>
-      <circle class="here-ring" cx="482" cy="615" r="9"/>
-      <circle class="here" cx="482" cy="615" r="7"/>
-      <text class="here-text" x="499" y="622">Tu es ici</text>
-    </svg>
+            <circle class="here-ring" cx="500" cy="694" r="8"/>
+            <circle class="here" cx="500" cy="694" r="6"/>
+            <text class="here-text" x="516" y="700">Tu es ici</text>
+            <text class="outside-text" x="830" y="696">Stationnement</text>
+          </svg>
+        </div>
       </div>
-      <div class="card info" aria-live="polite">
-        <h3 id="info-name"></h3>
-        <p class="where" id="info-where"></p>
-        <ul id="info-text"></ul>
+
+      <div class="side">
+        <div class="card info" aria-live="polite">
+          <h2 id="info-name"></h2>
+          <p class="where" id="info-where"></p>
+          <ul id="info-text"></ul>
+        </div>
+        <div class="card finder">
+          <div class="chips" id="chips" role="group" aria-label="Choisis une partie"></div>
+          <ul id="place-list"></ul>
+        </div>
       </div>
-    </div>
-    <div class="card key">
-      <ol id="key-list" aria-label="Les numéros"></ol>
     </div>
   </section>
 
-  <section id="animaux">
+  <section class="view" id="animaux" hidden>
     <div class="head">
-      <h2>Les animaux</h2>
-      <p>Il y a quatre parties dans le zoo.</p>
+      <h1>Les animaux</h1>
+      <p>Il y a plus de 60 espèces et quatre parties dans le zoo.</p>
     </div>
     <div class="parts">
       <article class="card part">
-        <h3>L'Afrique</h3>
+        <h2><span class="dot cat-afrique"></span>L'Afrique</h2>
         <p>Il y a de grands animaux.</p>
-        <ul class="chips"><li>les lions</li><li>les autruches</li><li>les lémuriens</li><li>les gibbons</li></ul>
+        <ul class="tags"><li>les lions</li><li>les autruches</li><li>les lémuriens</li><li>les gibbons</li></ul>
       </article>
       <article class="card part">
-        <h3>L'Asie</h3>
+        <h2><span class="dot cat-asie"></span>L'Asie</h2>
         <p>C'est la plus petite partie.</p>
-        <ul class="chips"><li>les tigres</li><li>les chouettes</li></ul>
+        <ul class="tags"><li>les tigres</li><li>les chouettes</li></ul>
       </article>
       <article class="card part">
-        <h3>Les Amériques</h3>
+        <h2><span class="dot cat-ameriques"></span>Les Amériques</h2>
         <p>Il y a des animaux du Canada.</p>
-        <ul class="chips"><li>les ours noirs</li><li>les loups</li><li>les caribous</li><li>les renards</li><li>les jaguars</li><li>les alpagas</li></ul>
+        <ul class="tags"><li>les ours noirs</li><li>les loups</li><li>les caribous</li><li>les renards</li><li>les jaguars</li><li>les alpagas</li></ul>
       </article>
       <article class="card part">
-        <h3>La Découverte</h3>
+        <h2><span class="dot cat-decouverte"></span>La Découverte</h2>
         <p>Il y a de petits animaux.</p>
-        <ul class="chips"><li>les loutres</li><li>les suricates</li><li>les chèvres</li><li>les flamants roses</li><li>les wallabies</li></ul>
+        <ul class="tags"><li>les loutres</li><li>les suricates</li><li>les chèvres</li><li>les flamants roses</li><li>les wallabies</li></ul>
       </article>
     </div>
   </section>
 
-  <div class="duo">
-    <section id="programme">
-      <div class="head">
-        <h2>Le programme</h2>
-        <p>C'est pour le plaisir. Ces heures sont inventées.</p>
-      </div>
-      <ol class="card times">
-        <li><b>10 h</b> Le repas des lions</li>
-        <li><b>11 h 30</b> Le repas des singes</li>
-        <li><b>13 h</b> Le repas des loutres</li>
-        <li><b>14 h 30</b> Les histoires du tigre</li>
-        <li><b>15 h 30</b> La pizza pour les singes</li>
-      </ol>
-    </section>
-
-    <section id="heures">
-      <div class="head">
-        <h2>Les heures</h2>
-        <p>Fermé le mardi et le mercredi. Fermé le 24 et le 25 décembre.</p>
-      </div>
-      <div class="card table-card">
-        <table>
-          <thead><tr><th scope="col">Dates (2026)</th><th scope="col">Ouvert</th><th scope="col">Sortie</th></tr></thead>
-          <tbody>
-            <tr><td>Mars (le dimanche)</td><td class="t">11 h à 15 h</td><td class="t">15 h 45</td></tr>
-            <tr><td>2 avril au 15 mai</td><td class="t">10 h à 16 h</td><td class="t">17 h 30</td></tr>
-            <tr><td>16 mai au 7 septembre</td><td class="t">9 h à 17 h</td><td class="t">18 h 30</td></tr>
-            <tr><td>8 septembre au 31 octobre</td><td class="t">10 h à 16 h</td><td class="t">17 h 30</td></tr>
-            <tr><td>1er au 23 novembre</td><td class="t">10 h à 16 h</td><td class="t">17 h</td></tr>
-            <tr><td>27 novembre au 2 janvier</td><td class="t">17 h à 20 h 30</td><td class="t">21 h 30</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-  </div>
-
-  <section id="fetes">
+  <section class="view" id="programme" hidden>
     <div class="head">
-      <h2>Les fêtes</h2>
+      <h1>Le programme</h1>
+      <p>Voici le programme du jour et les heures du zoo.</p>
+    </div>
+    <div class="duo">
+      <div class="block">
+        <div class="head">
+          <h2>Aujourd'hui</h2>
+          <p>C'est pour le plaisir. Ces heures sont inventées.</p>
+        </div>
+        <ol class="card times">
+          <li><b>10 h</b> Le repas des lions</li>
+          <li><b>11 h 30</b> Le repas des singes</li>
+          <li><b>13 h</b> Le repas des loutres</li>
+          <li><b>14 h 30</b> Les histoires du tigre</li>
+          <li><b>15 h 30</b> La pizza pour les singes</li>
+        </ol>
+      </div>
+      <div class="block">
+        <div class="head">
+          <h2>Les heures d'ouverture</h2>
+          <p>Fermé le mardi et le mercredi. Fermé le 24 et le 25 décembre.</p>
+        </div>
+        <div class="card table-card">
+          <table>
+            <thead><tr><th scope="col">Dates (2026)</th><th scope="col">Ouvert</th><th scope="col">Sortie</th></tr></thead>
+            <tbody>
+              <tr><td>Mars (le dimanche)</td><td class="t">11 h à 15 h</td><td class="t">15 h 45</td></tr>
+              <tr><td>2 avril au 15 mai</td><td class="t">10 h à 16 h</td><td class="t">17 h 30</td></tr>
+              <tr><td>16 mai au 7 septembre</td><td class="t">9 h à 17 h</td><td class="t">18 h 30</td></tr>
+              <tr><td>8 septembre au 31 octobre</td><td class="t">10 h à 16 h</td><td class="t">17 h 30</td></tr>
+              <tr><td>1er au 23 novembre</td><td class="t">10 h à 16 h</td><td class="t">17 h</td></tr>
+              <tr><td>27 novembre au 2 janvier</td><td class="t">17 h à 20 h 30</td><td class="t">21 h 30</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="view" id="fetes" hidden>
+    <div class="head">
+      <h1>Les fêtes</h1>
       <p>Il y a des fêtes pendant l'année.</p>
     </div>
     <ul class="events">
@@ -513,60 +386,98 @@
 </main>
 
 <footer>
-  <div class="wrap">
-    <p>Merci ! Au revoir !</p>
-    <p>Ce site est pour le plaisir. Ce n'est pas le vrai site du Zoo de Magnetic Hill.</p>
-  </div>
+  <div class="wrap">Merci ! Au revoir ! Ce site est pour le plaisir. Ce n'est pas le vrai site du Zoo de Magnetic Hill.</div>
 </footer>
 
 <script>
   const places = [
-    { id: "lions", name: "Les lions", where: "L'Afrique. En haut, à gauche.",
+    { id: "lions", name: "Les lions", cat: "afrique", icon: "🦁", x: 165, y: 205, where: "En Afrique. En haut, à gauche.",
       text: ["Les lions sont jaunes.", "Ils sont forts.", "Ils mangent de la viande.", "À 10 h, c'est le repas !"] },
-    { id: "singes", name: "Les singes", where: "L'Afrique. En haut, au milieu.",
+    { id: "singes", name: "Les singes", cat: "afrique", icon: "🐒", x: 335, y: 128, where: "En Afrique, à côté des lions.",
       text: ["Les singes aiment les arbres.", "Ils sont drôles.", "À 11 h 30, c'est le repas !", "À 15 h 30, ils mangent de la pizza !"] },
-    { id: "autruches", name: "Les autruches", where: "L'Afrique. En haut, à droite.",
+    { id: "autruches", name: "Les autruches", cat: "afrique", icon: "🐦", x: 360, y: 262, where: "En Afrique, à côté des singes.",
       text: ["Les autruches sont de grands oiseaux.", "Elles ont un long cou.", "Elles ne volent pas.", "Elles courent vite."] },
-    { id: "tigres", name: "Les tigres", where: "L'Asie. Au milieu, à gauche.",
+    { id: "tigres", name: "Les tigres", cat: "asie", icon: "🐅", x: 760, y: 262, where: "En Asie. En haut, à droite.",
       text: ["Les tigres sont orange et noirs.", "Ils sont très forts.", "Ils aiment l'eau.", "À 14 h 30, les gardiens parlent du tigre."] },
-    { id: "restaurant", name: "Le restaurant", where: "Au milieu.",
+    { id: "chouettes", name: "Les chouettes", cat: "asie", icon: "🦉", x: 640, y: 150, where: "En Asie, à côté des tigres.",
+      text: ["Les chouettes sont des oiseaux.", "Elles volent la nuit.", "Elles ont de grands yeux."] },
+    { id: "restaurant", name: "Le restaurant", cat: "services", icon: "🍽️", x: 395, y: 382, where: "Au milieu, à côté du lac.",
       text: ["Ici, on mange.", "Il y a de la pizza et des frites.", "J'aime les frites !"] },
-    { id: "toilettes", name: "Les toilettes", where: "Au milieu, à côté du restaurant.",
+    { id: "toilettes", name: "Les toilettes", cat: "services", icon: "🚻", x: 628, y: 368, where: "Au milieu, à côté du lac.",
       text: ["Les toilettes sont ici.", "Elles sont propres."] },
-    { id: "loutres", name: "Les loutres", where: "La Découverte. Au milieu, à droite.",
-      text: ["Les loutres nagent bien.", "Elles mangent du poisson.", "À 13 h, c'est le repas !", "Il y a aussi des suricates et des chèvres."] },
-    { id: "ours", name: "Les ours", where: "Les Amériques. En bas, à gauche.",
-      text: ["Les ours sont noirs.", "Ils sont grands et forts.", "Ils aiment le miel.", "Il y a aussi des loups et des jaguars."] },
-    { id: "boutique", name: "La boutique", where: "En bas, à côté de l'entrée.",
+    { id: "ours", name: "Les ours", cat: "ameriques", icon: "🐻", x: 165, y: 475, where: "Aux Amériques. En bas, à gauche.",
+      text: ["Les ours sont noirs.", "Ils sont grands et forts.", "Ils aiment le miel.", "Il y a aussi des jaguars."] },
+    { id: "loups", name: "Les loups", cat: "ameriques", icon: "🐺", x: 335, y: 548, where: "Aux Amériques, à côté des ours.",
+      text: ["Les loups sont gris.", "Ils vivent en groupe.", "Ils mangent de la viande."] },
+    { id: "loutres", name: "Les loutres", cat: "decouverte", icon: "🦦", x: 835, y: 455, where: "À la Découverte. En bas, à droite.",
+      text: ["Les loutres nagent bien.", "Elles mangent du poisson.", "À 13 h, c'est le repas !", "Il y a aussi des suricates."] },
+    { id: "chevres", name: "Les chèvres", cat: "decouverte", icon: "🐐", x: 660, y: 505, where: "À la Découverte, à côté des loutres.",
+      text: ["Les chèvres sont petites.", "Elles sont gentilles.", "Elles mangent de l'herbe."] },
+    { id: "boutique", name: "La boutique", cat: "services", icon: "🎁", x: 415, y: 612, where: "En bas, à côté de l'entrée.",
       text: ["Ici, on achète des cadeaux.", "En été, la boutique est ouverte de 9 h à 17 h 30."] },
-    { id: "parc", name: "Les jeux", where: "En bas, à droite.",
+    { id: "parc", name: "Les jeux", cat: "services", icon: "🎠", x: 585, y: 612, where: "En bas, à côté de l'entrée.",
       text: ["Les enfants jouent ici.", "Il y a des arbres."] },
-    { id: "entree", name: "L'entrée", where: "En bas, au milieu.",
+    { id: "entree", name: "L'entrée", cat: "services", icon: "🎟️", x: 500, y: 624, where: "En bas, au milieu.",
       text: ["En été, le zoo est ouvert de 9 h à 17 h.", "Il est fermé le mardi et le mercredi.", "En été, un billet coûte 21 $.", "Pour les bébés de 0 à 2 ans, c'est gratuit.", "Bienvenue !"] }
   ];
 
-  const zones = [...document.querySelectorAll(".zone")];
-  const list = document.getElementById("key-list");
+  const filters = [
+    { id: "tout", name: "Tout" }, { id: "afrique", name: "Afrique" }, { id: "asie", name: "Asie" },
+    { id: "ameriques", name: "Amériques" }, { id: "decouverte", name: "Découverte" }, { id: "services", name: "Services" }
+  ];
 
-  places.forEach((place, i) => {
-    const zone = zones.find(z => z.dataset.id === place.id);
-    zone.setAttribute("aria-label", (i + 1) + ". " + place.name);
-    zone.addEventListener("click", () => show(place));
-    zone.addEventListener("keydown", e => {
+  const decor = [
+    ["acacia", 130, 175, 1], ["acacia", 255, 100, .8], ["acacia", 470, 135, .9], ["acacia", 130, 300, .85], ["acacia", 455, 265, .75],
+    ["rock", 225, 225, 1], ["rock", 415, 110, .8],
+    ["mountain", 720, 112, 1.25], ["mountain", 850, 150, 1], ["bamboo", 600, 215, 1], ["bamboo", 625, 255, .85], ["bamboo", 895, 245, 1], ["bamboo", 690, 290, .8], ["bamboo", 840, 300, .9],
+    ["pine", 110, 430, 1], ["pine", 130, 550, 1.1], ["pine", 290, 425, .9], ["pine", 405, 480, 1], ["pine", 92, 500, .85], ["pine", 400, 545, .9], ["pine", 265, 520, .8],
+    ["round", 625, 450, .9], ["round", 880, 540, 1], ["round", 785, 410, .85], ["round", 640, 575, .8], ["rock", 750, 535, .9],
+    ["round", 70, 340, .8], ["round", 545, 45, .7], ["round", 940, 380, .8], ["round", 470, 455, .55], ["round", 550, 450, .55]
+  ];
+
+  const svgNS = "http://www.w3.org/2000/svg";
+  function svgEl(name, attrs, parent) {
+    const el = document.createElementNS(svgNS, name);
+    Object.entries(attrs || {}).forEach(([key, value]) => el.setAttribute(key, value));
+    if (parent) parent.append(el);
+    return el;
+  }
+
+  const decorLayer = document.getElementById("decor");
+  [...decor].sort((a, b) => a[2] - b[2]).forEach(([symbol, x, y, scale]) => {
+    svgEl("use", { href: "#s-" + symbol, transform: `translate(${x} ${y}) scale(${scale})` }, decorLayer);
+  });
+
+  const pinLayer = document.getElementById("pins");
+  const placeList = document.getElementById("place-list");
+  const pins = new Map();
+  const listButtons = new Map();
+
+  [...places].sort((a, b) => a.y - b.y).forEach(place => {
+    const pin = svgEl("g", { class: "pin", tabindex: "0", role: "button", "aria-label": place.name, transform: `translate(${place.x} ${place.y})` }, pinLayer);
+    const body = svgEl("g", { class: "pin-body" }, pin);
+    svgEl("path", { class: "pin-head cat-" + place.cat, d: "M0 0C-5-10-22-20-22-38a22 22 0 1 1 44 0C22-20 5-10 0 0Z" }, body);
+    svgEl("circle", { class: "pin-disc", cy: "-38", r: "17" }, body);
+    svgEl("text", { class: "pin-icon", y: "-30" }, body).textContent = place.icon;
+    if (place.id !== "entree") svgEl("text", { class: "pin-label", y: "20" }, pin).textContent = place.name;
+    pin.addEventListener("click", () => show(place));
+    pin.addEventListener("keydown", e => {
       if (e.key === "Enter" || e.key === " ") { e.preventDefault(); show(place); }
     });
+    pins.set(place.id, pin);
+  });
 
+  places.forEach(place => {
     const li = document.createElement("li");
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.dataset.id = place.id;
-    const num = document.createElement("span");
-    num.className = "num";
-    num.textContent = i + 1;
-    btn.append(num, place.name);
-    btn.addEventListener("click", () => show(place));
-    li.append(btn);
-    list.append(li);
+    const button = document.createElement("button");
+    button.type = "button";
+    const dot = document.createElement("span");
+    dot.className = "dot cat-" + place.cat;
+    button.append(dot, place.name);
+    button.addEventListener("click", () => show(place));
+    li.append(button);
+    placeList.append(li);
+    listButtons.set(place.id, button);
   });
 
   function show(place) {
@@ -577,29 +488,65 @@
       li.textContent = sentence;
       return li;
     }));
-    zones.forEach(z => z.classList.toggle("on", z.dataset.id === place.id));
-    list.querySelectorAll("button").forEach(b =>
-      b.setAttribute("aria-pressed", String(b.dataset.id === place.id)));
+    places.forEach(p => {
+      pins.get(p.id).classList.toggle("on", p.id === place.id);
+      listButtons.get(p.id).setAttribute("aria-pressed", String(p.id === place.id));
+    });
   }
 
+  const chipRow = document.getElementById("chips");
+  function applyFilter(filterId) {
+    places.forEach(p => {
+      const match = filterId === "tout" || p.cat === filterId;
+      pins.get(p.id).classList.toggle("dim", !match);
+      listButtons.get(p.id).parentElement.hidden = !match;
+    });
+    chipRow.querySelectorAll("button").forEach(chip => chip.setAttribute("aria-pressed", String(chip.dataset.id === filterId)));
+  }
+  filters.forEach(filter => {
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.className = "chip";
+    chip.dataset.id = filter.id;
+    if (filter.id !== "tout") {
+      const dot = document.createElement("span");
+      dot.className = "dot cat-" + filter.id;
+      chip.append(dot);
+    }
+    chip.append(filter.name);
+    chip.addEventListener("click", () => applyFilter(filter.id));
+    chipRow.append(chip);
+  });
+  applyFilter("tout");
   show(places[0]);
 
-  const root = document.documentElement;
-  const themeButton = document.getElementById("theme");
-  const darkQuery = window.matchMedia("(prefers-color-scheme: dark)");
+  const views = [...document.querySelectorAll(".view")];
+  const tabLinks = [...document.querySelectorAll(".tabs a")];
+  function route() {
+    const wanted = location.hash.slice(1);
+    const current = views.some(view => view.id === wanted) ? wanted : "carte";
+    views.forEach(view => { view.hidden = view.id !== current; });
+    tabLinks.forEach(link => {
+      if (link.getAttribute("href") === "#" + current) link.setAttribute("aria-current", "page");
+      else link.removeAttribute("aria-current");
+    });
+    window.scrollTo(0, 0);
+  }
+  window.addEventListener("hashchange", route);
+  route();
 
+  const root = document.documentElement;
+  const darkQuery = window.matchMedia("(prefers-color-scheme: dark)");
   function isDark() {
     return root.dataset.theme ? root.dataset.theme === "dark" : darkQuery.matches;
   }
-
   function paintThemeButton() {
     const dark = isDark();
     document.getElementById("icon-moon").hidden = dark;
     document.getElementById("icon-sun").hidden = !dark;
     document.getElementById("theme-label").textContent = dark ? "Mode clair" : "Mode sombre";
   }
-
-  themeButton.addEventListener("click", () => {
+  document.getElementById("theme").addEventListener("click", () => {
     const next = isDark() ? "light" : "dark";
     root.dataset.theme = next;
     try { localStorage.setItem("zoo-theme", next); } catch (e) {}
@@ -607,17 +554,6 @@
   });
   darkQuery.addEventListener("change", paintThemeButton);
   paintThemeButton();
-
-  const navLinks = [...document.querySelectorAll(".nav a")];
-  const spy = new IntersectionObserver(entries => {
-    entries.filter(entry => entry.isIntersecting).forEach(entry => {
-      navLinks.forEach(link => {
-        if (link.getAttribute("href") === "#" + entry.target.id) link.setAttribute("aria-current", "true");
-        else link.removeAttribute("aria-current");
-      });
-    });
-  }, { rootMargin: "-25% 0px -65% 0px" });
-  navLinks.forEach(link => spy.observe(document.querySelector(link.getAttribute("href"))));
 </script>
 </body>
 </html>
