@@ -3,258 +3,485 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<style>:root { color-scheme: light; } body { margin: 0; }</style>
 <title>Mon Petit Zoo</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<script>
+  try {
+    var savedTheme = localStorage.getItem("zoo-theme");
+    if (savedTheme === "light" || savedTheme === "dark") document.documentElement.dataset.theme = savedTheme;
+  } catch (e) {}
+</script>
 <style>
-  /* Layout: a hand-drawn park leaflet. The map leads, the info card sits beside it, the numbered key runs below. */
+  /* Layout: Fluent-style single page. Acrylic top bar, soft mica background, one card-based section per topic. */
   :root {
-    --bg: #e4efd2; --card: #f8fbef; --ink: #1f3a2b; --soft: #4d6655;
-    --grass: #b9d893; --road: #efdcae; --sand: #eec97c; --leaf: #8cc06b;
-    --tree: #4f8f4f; --water: #9fd3e8; --wave: #4b93b5; --rock: #b7a58c;
-    --hut: #f6e9d0; --pink: #d63a76; --on-ink: #f8fbef;
-    --display: "Patrick Hand", "Comic Sans MS", cursive;
-    --body: "Atkinson Hyperlegible", "Trebuchet MS", sans-serif;
+    --bg: #f3f3f3; --bg-tint: #e3f0ea; --surface: rgba(255, 255, 255, .78); --stroke: rgba(0, 0, 0, .08);
+    --text: #1a1a1a; --text-2: #5a5a5a; --accent: #0a7a5f; --accent-hover: #086a52; --on-accent: #ffffff;
+    --accent-soft: rgba(10, 122, 95, .1); --hover: rgba(0, 0, 0, .05); --acrylic: rgba(249, 249, 249, .72);
+    --shadow: 0 1px 2px rgba(0, 0, 0, .05), 0 6px 16px rgba(0, 0, 0, .06);
+    --grass: #cfe5c4; --road: #f6f0e1; --sand: #f3dca6; --leaf: #a9d48f; --tree: #5a9e5f;
+    --water: #a8dcf0; --wave: #3e8fb5; --rock: #c2b5a3; --hut: #ffffff; --here: #c4314b;
+    --line: rgba(0, 0, 0, .2);
+    --font: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+    --font-display: "Segoe UI Variable Display", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+    color-scheme: light;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --bg: #15231b; --card: #1f3227; --ink: #eaf3dc; --soft: #acc2ae;
-      --grass: #2c4a33; --road: #6c5f43; --sand: #80662f; --leaf: #3f7040;
-      --tree: #6fae68; --water: #2b6480; --wave: #94d0ea; --rock: #72654f;
-      --hut: #4a4133; --pink: #ff7fae; --on-ink: #15231b; color-scheme: dark;
+      --bg: #202020; --bg-tint: #1b2b26; --surface: rgba(255, 255, 255, .055); --stroke: rgba(255, 255, 255, .09);
+      --text: #f5f5f5; --text-2: #c8c8c8; --accent: #4cd4b0; --accent-hover: #6be0c1; --on-accent: #062a20;
+      --accent-soft: rgba(76, 212, 176, .14); --hover: rgba(255, 255, 255, .07); --acrylic: rgba(36, 36, 36, .72);
+      --shadow: 0 1px 2px rgba(0, 0, 0, .25), 0 6px 16px rgba(0, 0, 0, .25);
+      --grass: #27382c; --road: #4a4538; --sand: #6b5a33; --leaf: #365c3c; --tree: #5fa868;
+      --water: #27566e; --wave: #8fd3ee; --rock: #6a6154; --hut: #3a3a3a; --here: #ff99a4;
+      --line: rgba(255, 255, 255, .24); color-scheme: dark;
     }
   }
   :root[data-theme="dark"] {
-    --bg: #15231b; --card: #1f3227; --ink: #eaf3dc; --soft: #acc2ae;
-    --grass: #2c4a33; --road: #6c5f43; --sand: #80662f; --leaf: #3f7040;
-    --tree: #6fae68; --water: #2b6480; --wave: #94d0ea; --rock: #72654f;
-    --hut: #4a4133; --pink: #ff7fae; --on-ink: #15231b; color-scheme: dark;
+    --bg: #202020; --bg-tint: #1b2b26; --surface: rgba(255, 255, 255, .055); --stroke: rgba(255, 255, 255, .09);
+    --text: #f5f5f5; --text-2: #c8c8c8; --accent: #4cd4b0; --accent-hover: #6be0c1; --on-accent: #062a20;
+    --accent-soft: rgba(76, 212, 176, .14); --hover: rgba(255, 255, 255, .07); --acrylic: rgba(36, 36, 36, .72);
+    --shadow: 0 1px 2px rgba(0, 0, 0, .25), 0 6px 16px rgba(0, 0, 0, .25);
+    --grass: #27382c; --road: #4a4538; --sand: #6b5a33; --leaf: #365c3c; --tree: #5fa868;
+    --water: #27566e; --wave: #8fd3ee; --rock: #6a6154; --hut: #3a3a3a; --here: #ff99a4;
+    --line: rgba(255, 255, 255, .24); color-scheme: dark;
   }
 
+  *, *::before, *::after { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html { -webkit-text-size-adjust: 100%; }
+  @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
   body {
-    background: var(--bg); color: var(--ink); font: 400 17px/1.5 var(--body);
-    padding-left: max(16px, env(safe-area-inset-left, 0px));
-    padding-right: max(16px, env(safe-area-inset-right, 0px));
-    padding-block: 24px 32px;
+    margin: 0; color: var(--text); font: 400 16px/1.5 var(--font);
+    background: linear-gradient(170deg, var(--bg-tint), var(--bg) 560px) no-repeat var(--bg);
   }
-  .page { max-width: 1120px; margin: 0 auto; display: grid; gap: 20px; }
-  h1, h2 { font-family: var(--display); font-weight: 400; margin: 0; text-wrap: balance; line-height: 1.1; }
-  h1 { font-size: clamp(2.6rem, 7vw, 4rem); }
-  header p { margin: 4px 0 0; font-size: 1.15rem; color: var(--soft); }
+  h1, h2, h3, p { margin: 0; }
+  h1, h2, h3 { font-family: var(--font-display); font-weight: 600; text-wrap: balance; line-height: 1.2; }
+  a { color: inherit; }
+  :focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+  .wrap { width: 100%; max-width: 1180px; margin-inline: auto; padding-inline: clamp(16px, 3vw, 32px); }
+  .card {
+    background: var(--surface); border: 1px solid var(--stroke); border-radius: 8px; box-shadow: var(--shadow);
+  }
 
-  .main { display: grid; grid-template-columns: minmax(0, 2.1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
-  @media (max-width: 760px) { .main { grid-template-columns: minmax(0, 1fr); } }
+  /* Top bar */
+  .topbar {
+    position: sticky; top: 0; z-index: 20; background: var(--acrylic); border-bottom: 1px solid var(--stroke);
+    -webkit-backdrop-filter: blur(24px) saturate(1.4); backdrop-filter: blur(24px) saturate(1.4);
+  }
+  .bar { display: flex; align-items: center; gap: 8px 24px; min-height: 56px; }
+  .brand {
+    display: flex; align-items: center; gap: 10px; flex: none; text-decoration: none;
+    font: 600 1.05rem/1 var(--font-display); border-radius: 4px;
+  }
+  .brand svg { width: 28px; height: 28px; display: block; }
+  .brand .mark { fill: var(--accent); } .brand .paw { fill: var(--on-accent); }
+  .nav { display: flex; gap: 2px; flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: none; padding-block: 4px; }
+  .nav::-webkit-scrollbar { display: none; }
+  .nav a {
+    position: relative; flex: none; padding: 7px 12px; border-radius: 4px; text-decoration: none; color: var(--text-2);
+    transition: background-color .12s, color .12s;
+  }
+  .nav a:hover { background: var(--hover); color: var(--text); }
+  .nav a[aria-current="true"] { color: var(--text); font-weight: 600; }
+  .nav a[aria-current="true"]::after {
+    content: ""; position: absolute; left: 12px; right: 12px; bottom: 1px; height: 3px;
+    border-radius: 2px; background: var(--accent);
+  }
+  .theme {
+    display: flex; align-items: center; gap: 8px; flex: none; margin-left: auto; padding: 6px 12px; min-height: 34px;
+    color: var(--text); background: var(--surface); border: 1px solid var(--stroke); border-radius: 4px;
+    font: 400 .9rem/1 var(--font); cursor: pointer; transition: background-color .12s;
+  }
+  .theme:hover { background: var(--hover); }
+  .theme svg { width: 16px; height: 16px; display: block; fill: currentColor; }
+  @media (max-width: 760px) {
+    .bar { flex-wrap: wrap; padding-block: 8px 0; min-height: 0; }
+    .nav { order: 3; flex: 0 0 100%; }
+  }
 
-  svg.map { display: block; width: 100%; height: auto; border-radius: 14px; }
-  svg.map text { fill: var(--ink); font-family: var(--display); }
+  /* Page and sections */
+  .page { display: grid; gap: 56px; padding-block: 40px 40px; }
+  section { display: grid; gap: 16px; min-width: 0; scroll-margin-top: 112px; }
+  .head h2 { font-size: 1.75rem; }
+  .head p { color: var(--text-2); }
+
+  .hero { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 24px 48px; align-items: center; }
+  .hero-text { display: grid; gap: 12px; justify-items: start; }
+  .hero .hello { color: var(--accent); font-weight: 600; }
+  .hero h1 { font-size: clamp(2.5rem, 6vw, 3.75rem); line-height: 1.08; }
+  .hero p.lead { font-size: 1.1rem; color: var(--text-2); max-width: 60ch; }
+  .button {
+    display: inline-block; padding: 9px 20px; border-radius: 4px; text-decoration: none; font-weight: 600;
+    color: var(--on-accent); background: var(--accent); transition: background-color .12s;
+  }
+  .button:hover { background: var(--accent-hover); }
+  .facts { margin: 0; padding: 4px 20px; }
+  .facts div { display: flex; justify-content: space-between; gap: 16px; padding-block: 12px; border-bottom: 1px solid var(--stroke); }
+  .facts div:last-child { border-bottom: 0; }
+  .facts dt { color: var(--text-2); }
+  .facts dd { margin: 0; font-weight: 600; text-align: right; }
+
+  /* Map */
+  .main { display: grid; grid-template-columns: minmax(0, 2.1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+  .map-card { padding: 8px; }
+  svg.map { display: block; width: 100%; height: auto; border-radius: 4px; }
+  svg.map text { fill: var(--text); font-family: var(--font); }
+  .s-sand-top { stop-color: color-mix(in srgb, var(--sand), white 24%); } .s-sand { stop-color: var(--sand); }
+  .s-leaf-top { stop-color: color-mix(in srgb, var(--leaf), white 22%); } .s-leaf { stop-color: var(--leaf); }
+  .s-water-top { stop-color: color-mix(in srgb, var(--water), white 26%); } .s-water { stop-color: var(--water); }
   .ground { fill: var(--grass); }
-  .road { fill: none; stroke: var(--road); stroke-width: 28; stroke-linecap: round; }
-  .area { stroke: var(--ink); stroke-width: 3; stroke-dasharray: 9 7; }
-  .building { stroke: var(--ink); stroke-width: 3; }
-  .sand { fill: var(--sand); } .leaf { fill: var(--leaf); } .water { fill: var(--water); }
+  .tuft { fill: var(--tree); opacity: .22; }
+  .road-edge, .road, .road-dots { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  .road-edge { stroke: var(--line); stroke-width: 25; }
+  .road { stroke: var(--road); stroke-width: 22; }
+  .road-dots { stroke: var(--text); stroke-width: 3; stroke-dasharray: 1 13; opacity: .24; }
+  .plaza { fill: var(--road); stroke: var(--line); stroke-width: 1.5; }
+  .area, .building { stroke: var(--line); stroke-width: 1.5; transition: stroke .12s; }
+  .sand { fill: url(#g-sand); } .leaf { fill: url(#g-leaf); } .water { fill: url(#g-water); }
   .rock { fill: var(--rock); } .hut { fill: var(--hut); } .tree { fill: var(--tree); }
-  .wave { fill: none; stroke: var(--wave); stroke-width: 3; stroke-linecap: round; }
-  .label { font-size: 29px; text-anchor: middle; }
-  .label.small { font-size: 24px; }
-  .badge circle { fill: var(--ink); }
-  svg.map .badge text { fill: var(--on-ink); font-size: 21px; text-anchor: middle; }
+  .tree-hi { fill: #fff; opacity: .2; }
+  .wave { fill: none; stroke: var(--wave); stroke-width: 3; stroke-linecap: round; opacity: .75; }
+  svg.map .ico {
+    font-family: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif;
+    font-size: 42px; text-anchor: middle;
+  }
+  svg.map .ico.small { font-size: 34px; }
+  .label { font-size: 26px; font-weight: 600; text-anchor: middle; }
+  .label.small { font-size: 19px; }
+  svg.map .region { font-size: 19px; text-anchor: middle; opacity: .78; }
+  .badge circle { fill: var(--accent); }
+  svg.map .badge text { fill: var(--on-accent); font-size: 17px; font-weight: 600; text-anchor: middle; }
   .zone { cursor: pointer; outline: none; }
-  .zone .area, .zone .building { transition: stroke .15s; }
-  .zone:hover .area, .zone:hover .building { stroke: var(--pink); }
-  .zone.on .area, .zone.on .building, .zone:focus-visible .area, .zone:focus-visible .building {
-    stroke: var(--pink); stroke-width: 6; stroke-dasharray: none;
-  }
-  .here { fill: var(--pink); }
-  svg.map .here-text { fill: var(--pink); font-size: 24px; }
-  .hours { font-size: 23px; text-anchor: end; }
+  .zone:hover .area, .zone:hover .building { stroke: var(--accent); stroke-width: 3; }
+  .zone.on .area, .zone.on .building, .zone:focus-visible .area, .zone:focus-visible .building { stroke: var(--accent); stroke-width: 5; }
+  .here, .here-ring { fill: var(--here); }
+  .here-ring { opacity: .35; transform-box: fill-box; transform-origin: center; animation: here-pulse 2.2s ease-out infinite; }
+  @keyframes here-pulse { from { transform: scale(1); opacity: .45; } to { transform: scale(2.3); opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .here-ring { animation: none; } }
+  svg.map .here-text { fill: var(--here); font-size: 21px; font-weight: 600; }
+  .hours { font-size: 20px; text-anchor: end; }
 
-  .info { background: var(--card); border: 2px solid var(--ink); border-radius: 14px; padding: 20px; }
-  .info h2 { font-size: 2.3rem; }
-  .where { margin: 6px 0 14px; color: var(--pink); font-weight: 700; }
-  .info ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; font-size: 1.15rem; }
+  .info { padding: 20px; }
+  .info h3 { font-size: 1.6rem; }
+  .where { margin: 4px 0 14px; color: var(--accent); font-weight: 600; }
+  .info ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; font-size: 1.05rem; }
 
-  .key h2 { font-size: 1.7rem; margin-bottom: 10px; }
-  .key ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; grid-template-columns: repeat(auto-fill, minmax(165px, 1fr)); }
+  .key { padding: 8px; }
+  .key ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 160px), 1fr)); }
   .key button {
-    width: 100%; display: flex; align-items: center; gap: 10px; padding: 7px 10px; text-align: left;
-    background: transparent; color: var(--ink); border: 2px solid transparent; border-radius: 10px;
-    font: 400 1.25rem/1.1 var(--display); cursor: pointer;
+    width: 100%; display: flex; align-items: center; gap: 10px; padding: 6px 8px; text-align: left;
+    background: transparent; color: var(--text); border: 0; border-radius: 4px;
+    font: 400 .95rem/1.2 var(--font); cursor: pointer; transition: background-color .12s;
   }
-  .key button:hover { border-color: var(--pink); }
-  .key button:focus-visible { outline: 3px solid var(--pink); outline-offset: 1px; }
-  .key button[aria-pressed="true"] { background: var(--card); border-color: var(--ink); }
+  .key button:hover { background: var(--hover); }
+  .key button[aria-pressed="true"] { background: var(--accent-soft); font-weight: 600; }
   .num {
-    flex: none; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center;
-    background: var(--ink); color: var(--on-ink); font-size: 1.05rem; font-variant-numeric: tabular-nums;
+    flex: none; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center;
+    background: var(--accent); color: var(--on-accent); font-size: .8rem; font-weight: 600; font-variant-numeric: tabular-nums;
   }
-  svg.map .region { font-size: 21px; text-anchor: middle; fill: var(--soft); }
-  .plan { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 20px 32px; align-items: start; }
-  @media (max-width: 760px) { .plan { grid-template-columns: minmax(0, 1fr); } }
-  .plan h2, .fetes h2 { font-size: 1.7rem; }
-  .note { margin: 2px 0 10px; color: var(--soft); }
-  .times, .fetes ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
-  .times li { display: grid; grid-template-columns: 5.2em minmax(0, 1fr); gap: 8px; }
-  .times b, td.t, th.t { font-variant-numeric: tabular-nums; white-space: nowrap; }
-  .scroll { overflow-x: auto; }
+
+  /* Animals */
+  .parts { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); }
+  .part { padding: 20px; display: grid; gap: 8px; align-content: start; }
+  .part h3 { font-size: 1.25rem; }
+  .part p { color: var(--text-2); }
+  .chips { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+  .chips li { padding: 3px 10px; border-radius: 12px; background: var(--accent-soft); font-size: .92rem; }
+
+  /* Schedule and hours */
+  .duo { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr); gap: 56px 24px; align-items: start; }
+  .times { list-style: none; margin: 0; padding: 4px 20px; }
+  .times li { display: grid; grid-template-columns: 5em minmax(0, 1fr); gap: 8px; padding-block: 12px; border-bottom: 1px solid var(--stroke); }
+  .times li:last-child { border-bottom: 0; }
+  .times b { color: var(--accent); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .table-card { padding: 4px 20px; overflow-x: auto; }
   table { border-collapse: collapse; width: 100%; }
-  th, td { text-align: left; padding: 6px 12px 6px 0; border-bottom: 1px solid var(--soft); }
-  th { font-family: var(--display); font-weight: 400; font-size: 1.2rem; }
-  .fetes ul { grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 12px 32px; margin-top: 10px; }
-  .fetes li { min-width: 0; }
-  .fetes strong { font-family: var(--display); font-weight: 400; font-size: 1.3rem; display: block; }
-  .fetes span { color: var(--pink); font-weight: 700; }
-  footer { font-family: var(--display); font-size: 1.4rem; }
-  footer small { display: block; font: 400 .95rem/1.5 var(--body); color: var(--soft); }
-  @media (prefers-reduced-motion: reduce) { .zone .area, .zone .building { transition: none; } }
+  th, td { text-align: left; padding: 11px 16px 11px 0; border-bottom: 1px solid var(--stroke); }
+  tbody tr:last-child td { border-bottom: 0; }
+  th { color: var(--text-2); font-weight: 600; font-size: .9rem; }
+  th:last-child, td:last-child { padding-right: 0; }
+  .t { white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+  /* Events */
+  .events { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); }
+  .events li { padding: 16px 20px; display: grid; gap: 2px; align-content: start; min-width: 0; }
+  .events span { color: var(--accent); font-size: .9rem; font-weight: 600; }
+  .events strong { font: 600 1.1rem/1.3 var(--font-display); }
+  .events p { color: var(--text-2); }
+
+  footer { border-top: 1px solid var(--stroke); padding-block: 20px 28px; }
+  footer p:first-child { font-weight: 600; }
+  footer p + p { color: var(--text-2); font-size: .9rem; }
+
+  @media (max-width: 860px) {
+    .hero, .main, .duo { grid-template-columns: minmax(0, 1fr); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .nav a, .theme, .button, .key button, .area, .building { transition: none; }
+  }
 </style>
 </head>
 <body>
 
-<div class="page">
-  <header>
-    <h1>Mon Petit Zoo</h1>
-    <p>Bonjour ! Voici la carte du zoo. Clique sur un animal.</p>
-    <p>Mon zoo est inspiré du Zoo de Magnetic Hill, à Moncton. Il y a quatre parties : l'Afrique, l'Asie, les Amériques et la Découverte.</p>
-  </header>
+<header class="topbar">
+  <div class="wrap bar">
+    <a class="brand" href="#accueil">
+      <svg viewBox="0 0 28 28" aria-hidden="true">
+        <rect class="mark" width="28" height="28" rx="6"/>
+        <g class="paw">
+          <ellipse cx="14" cy="18" rx="5.2" ry="4.2"/>
+          <circle cx="7.6" cy="13.4" r="2.1"/><circle cx="11.6" cy="9" r="2.2"/>
+          <circle cx="16.4" cy="9" r="2.2"/><circle cx="20.4" cy="13.4" r="2.1"/>
+        </g>
+      </svg>
+      Mon Petit Zoo
+    </a>
+    <nav class="nav" aria-label="Les sections">
+      <a href="#carte">La carte</a>
+      <a href="#animaux">Les animaux</a>
+      <a href="#programme">Le programme</a>
+      <a href="#heures">Les heures</a>
+      <a href="#fetes">Les fêtes</a>
+    </nav>
+    <button class="theme" id="theme" type="button">
+      <svg id="icon-moon" viewBox="0 0 16 16" aria-hidden="true"><path d="M6.2 1.2a6.9 6.9 0 1 0 8.6 8.6.6.6 0 0 0-.8-.7A5.6 5.6 0 0 1 6.9 2a.6.6 0 0 0-.7-.8z"/></svg>
+      <svg id="icon-sun" viewBox="0 0 16 16" aria-hidden="true" hidden><circle cx="8" cy="8" r="3.2"/><path d="M7.4 1h1.2v2.2H7.4zM7.4 12.8h1.2V15H7.4zM1 7.4h2.2v1.2H1zM12.8 7.4H15v1.2h-2.2zM3 2.2l1.6 1.6-.8.8L2.200 3zM12.2 11.4l1.6 1.6-.8.8-1.6-1.6zM13 2.200l.8.8-1.600 1.600-.8-.8zM3.800 11.400l.8.8L3 13.800l-.8-.8z"/></svg>
+      <span id="theme-label">Mode sombre</span>
+    </button>
+  </div>
+</header>
 
-  <div class="main">
+<main class="wrap page">
+  <section class="hero" id="accueil">
+    <div class="hero-text">
+      <p class="hello">Bonjour !</p>
+      <h1>Mon Petit Zoo</h1>
+      <p class="lead">Voici la carte du zoo. Clique sur un animal. Mon zoo est inspiré du Zoo de Magnetic Hill, à Moncton.</p>
+      <a class="button" href="#carte">Voir la carte</a>
+    </div>
+    <dl class="card facts">
+      <div><dt>Le zoo a</dt><dd>4 parties</dd></div>
+      <div><dt>Il y a</dt><dd>plus de 60 espèces</dd></div>
+      <div><dt>En été, ouvert</dt><dd>9 h à 17 h</dd></div>
+      <div><dt>Fermé</dt><dd>mardi et mercredi</dd></div>
+    </dl>
+  </section>
+
+  <section id="carte">
+    <div class="head">
+      <h2>La carte</h2>
+      <p>Clique sur un numéro. Tu es à l'entrée.</p>
+    </div>
+    <div class="main">
+      <div class="card map-card">
     <svg class="map" viewBox="0 0 800 645" role="group" aria-label="La carte du zoo">
+      <defs>
+        <linearGradient id="g-sand" x1="0" y1="0" x2="0" y2="1"><stop class="s-sand-top" offset="0"/><stop class="s-sand" offset="1"/></linearGradient>
+        <linearGradient id="g-leaf" x1="0" y1="0" x2="0" y2="1"><stop class="s-leaf-top" offset="0"/><stop class="s-leaf" offset="1"/></linearGradient>
+        <linearGradient id="g-water" x1="0" y1="0" x2="0" y2="1"><stop class="s-water-top" offset="0"/><stop class="s-water" offset="1"/></linearGradient>
+        <pattern id="tufts" width="46" height="46" patternUnits="userSpaceOnUse">
+          <circle class="tuft" cx="10" cy="12" r="2"/><circle class="tuft" cx="32" cy="30" r="1.6"/>
+        </pattern>
+        <filter id="soft" x="-10%" y="-10%" width="120%" height="125%">
+          <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000" flood-opacity=".2"/>
+        </filter>
+        <g id="canopy"><circle class="tree" r="20"/><circle class="tree-hi" cx="-6" cy="-6" r="9"/></g>
+      </defs>
+
       <rect class="ground" width="800" height="645"/>
-      <path class="road" d="M30 227H770M30 430H770M400 227V600"/>
+      <rect fill="url(#tufts)" width="800" height="645"/>
+
+      <path class="road-edge" d="M24 267a40 40 0 0 1 40-40H736a40 40 0 0 1 40 40V390a40 40 0 0 1-40 40H64a40 40 0 0 1-40-40ZM400 227V600"/>
+      <path class="road" d="M24 267a40 40 0 0 1 40-40H736a40 40 0 0 1 40 40V390a40 40 0 0 1-40 40H64a40 40 0 0 1-40-40ZM400 227V600"/>
+      <path class="road-dots" d="M24 267a40 40 0 0 1 40-40H736a40 40 0 0 1 40 40V390a40 40 0 0 1-40 40H64a40 40 0 0 1-40-40ZM400 227V600"/>
+      <circle class="plaza" cx="400" cy="430" r="24"/>
+      <circle class="water" cx="400" cy="430" r="11"/>
+
+      <use href="#canopy" transform="translate(272 62) scale(.42)"/>
+      <use href="#canopy" transform="translate(272 165) scale(.5)"/>
+      <use href="#canopy" transform="translate(528 95) scale(.5)"/>
+      <use href="#canopy" transform="translate(528 180) scale(.4)"/>
+      <use href="#canopy" transform="translate(595 512) scale(.4)"/>
+      <use href="#canopy" transform="translate(150 16) scale(.32)"/>
+      <use href="#canopy" transform="translate(650 16) scale(.32)"/>
 
       <!-- 1 Lions -->
       <g class="zone" data-id="lions" tabindex="0" role="button">
-        <rect class="area sand" x="40" y="35" width="215" height="165" rx="22"/>
-        <ellipse class="rock" cx="205" cy="165" rx="34" ry="20"/>
-        <ellipse class="rock" cx="165" cy="175" rx="20" ry="13"/>
-        <text class="label" x="147" y="125">Les lions</text>
-        <text class="region" x="147" y="150">Afrique</text>
-        <g class="badge"><circle cx="66" cy="60" r="16"/><text x="66" y="67">1</text></g>
+        <rect class="area sand" filter="url(#soft)" x="40" y="35" width="215" height="165" rx="18"/>
+        <ellipse class="rock" cx="218" cy="176" rx="24" ry="13"/>
+        <ellipse class="rock" cx="74" cy="178" rx="15" ry="9"/>
+        <text class="ico" x="147" y="100">🦁</text>
+        <text class="label" x="147" y="140">Les lions</text>
+        <text class="region" x="147" y="164">Afrique</text>
+        <g class="badge"><circle cx="66" cy="60" r="15"/><text x="66" y="66">1</text></g>
       </g>
 
       <!-- 2 Singes -->
       <g class="zone" data-id="singes" tabindex="0" role="button">
-        <rect class="area leaf" x="290" y="35" width="220" height="165" rx="22"/>
-        <circle class="tree" cx="345" cy="160" r="22"/>
-        <circle class="tree" cx="400" cy="170" r="17"/>
-        <circle class="tree" cx="455" cy="158" r="24"/>
-        <circle class="tree" cx="470" cy="75" r="18"/>
-        <text class="label" x="400" y="115">Les singes</text>
-        <text class="region" x="400" y="140">Afrique</text>
-        <g class="badge"><circle cx="316" cy="60" r="16"/><text x="316" y="67">2</text></g>
+        <rect class="area leaf" filter="url(#soft)" x="290" y="35" width="220" height="165" rx="18"/>
+        <use href="#canopy" transform="translate(325 170) scale(.72)"/>
+        <use href="#canopy" transform="translate(476 168) scale(.8)"/>
+        <use href="#canopy" transform="translate(474 68) scale(.78)"/>
+        <text class="ico" x="400" y="100">🐒</text>
+        <text class="label" x="400" y="140">Les singes</text>
+        <text class="region" x="400" y="164">Afrique</text>
+        <g class="badge"><circle cx="316" cy="60" r="15"/><text x="316" y="66">2</text></g>
       </g>
 
       <!-- 3 Autruches -->
       <g class="zone" data-id="autruches" tabindex="0" role="button">
-        <rect class="area sand" x="545" y="35" width="215" height="165" rx="22"/>
-        <circle class="tree" cx="715" cy="80" r="24"/>
-        <circle class="tree" cx="600" cy="165" r="18"/>
-        <text class="label" x="652" y="125">Les autruches</text>
-        <text class="region" x="652" y="150">Afrique</text>
-        <g class="badge"><circle cx="571" cy="60" r="16"/><text x="571" y="67">3</text></g>
+        <rect class="area sand" filter="url(#soft)" x="545" y="35" width="215" height="165" rx="18"/>
+        <use href="#canopy" transform="translate(724 70)"/>
+        <use href="#canopy" transform="translate(585 176) scale(.62)"/>
+        <text class="ico" x="652" y="100">🐦</text>
+        <text class="label" x="652" y="140">Les autruches</text>
+        <text class="region" x="652" y="164">Afrique</text>
+        <g class="badge"><circle cx="571" cy="60" r="15"/><text x="571" y="66">3</text></g>
       </g>
 
       <!-- 4 Tigres -->
       <g class="zone" data-id="tigres" tabindex="0" role="button">
-        <rect class="area sand" x="40" y="255" width="215" height="147" rx="22"/>
-        <ellipse class="water" cx="195" cy="370" rx="42" ry="20"/>
-        <text class="label" x="147" y="332">Les tigres</text>
-        <text class="region" x="118" y="357">Asie</text>
-        <g class="badge"><circle cx="66" cy="280" r="16"/><text x="66" y="287">4</text></g>
+        <rect class="area sand" filter="url(#soft)" x="40" y="255" width="215" height="147" rx="18"/>
+        <ellipse class="water" cx="222" cy="378" rx="26" ry="14"/>
+        <use href="#canopy" transform="translate(224 288) scale(.6)"/>
+        <text class="ico" x="147" y="312">🐅</text>
+        <text class="label" x="147" y="350">Les tigres</text>
+        <text class="region" x="147" y="373">Asie</text>
+        <g class="badge"><circle cx="66" cy="280" r="15"/><text x="66" y="286">4</text></g>
       </g>
 
       <!-- 5 Restaurant -->
       <g class="zone" data-id="restaurant" tabindex="0" role="button">
-        <rect class="building hut" x="275" y="258" width="110" height="140" rx="8"/>
-        <text class="label small" x="330" y="340">Restaurant</text>
-        <g class="badge"><circle cx="298" cy="282" r="16"/><text x="298" y="289">5</text></g>
+        <rect class="building hut" filter="url(#soft)" x="275" y="258" width="110" height="140" rx="10"/>
+        <text class="ico small" x="330" y="338">🍽️</text>
+        <text class="label small" x="330" y="374">Restaurant</text>
+        <g class="badge"><circle cx="298" cy="282" r="15"/><text x="298" y="288">5</text></g>
       </g>
 
       <!-- 6 Toilettes -->
       <g class="zone" data-id="toilettes" tabindex="0" role="button">
-        <rect class="building hut" x="415" y="258" width="110" height="140" rx="8"/>
-        <text class="label small" x="470" y="340">Toilettes</text>
-        <g class="badge"><circle cx="438" cy="282" r="16"/><text x="438" y="289">6</text></g>
+        <rect class="building hut" filter="url(#soft)" x="415" y="258" width="110" height="140" rx="10"/>
+        <text class="ico small" x="470" y="338">🚻</text>
+        <text class="label small" x="470" y="374">Toilettes</text>
+        <g class="badge"><circle cx="438" cy="282" r="15"/><text x="438" y="288">6</text></g>
       </g>
 
       <!-- 7 Loutres -->
       <g class="zone" data-id="loutres" tabindex="0" role="button">
-        <rect class="area water" x="545" y="255" width="215" height="147" rx="22"/>
-        <path class="wave" d="M600 365q14-14 28 0t28 0 28 0 28 0"/>
-        <path class="wave" d="M580 385q14-14 28 0t28 0 28 0"/>
-        <text class="label" x="652" y="318">Les loutres</text>
-        <text class="region" x="652" y="343">Découverte</text>
-        <g class="badge"><circle cx="571" cy="280" r="16"/><text x="571" y="287">7</text></g>
+        <rect class="area water" filter="url(#soft)" x="545" y="255" width="215" height="147" rx="18"/>
+        <path class="wave" d="M706 288q10-10 20 0t20 0"/>
+        <path class="wave" d="M706 386q10-10 20 0t20 0"/>
+        <path class="wave" d="M558 386q10-10 20 0t20 0"/>
+        <text class="ico" x="652" y="312">🦦</text>
+        <text class="label" x="652" y="350">Les loutres</text>
+        <text class="region" x="652" y="373">Découverte</text>
+        <g class="badge"><circle cx="571" cy="280" r="15"/><text x="571" y="286">7</text></g>
       </g>
 
       <!-- 8 Ours -->
       <g class="zone" data-id="ours" tabindex="0" role="button">
-        <rect class="area leaf" x="40" y="458" width="335" height="122" rx="22"/>
-        <circle class="tree" cx="320" cy="505" r="22"/>
-        <circle class="tree" cx="100" cy="548" r="18"/>
-        <ellipse class="rock" cx="275" cy="555" rx="26" ry="15"/>
-        <text class="label" x="205" y="528">Les ours</text>
-        <text class="region" x="205" y="553">Amériques</text>
-        <g class="badge"><circle cx="66" cy="483" r="16"/><text x="66" y="490">8</text></g>
+        <rect class="area leaf" filter="url(#soft)" x="40" y="458" width="335" height="122" rx="18"/>
+        <use href="#canopy" transform="translate(330 500)"/>
+        <use href="#canopy" transform="translate(92 548) scale(.8)"/>
+        <ellipse class="rock" cx="295" cy="556" rx="22" ry="12"/>
+        <text class="ico" x="205" y="505">🐻</text>
+        <text class="label" x="205" y="541">Les ours</text>
+        <text class="region" x="205" y="564">Amériques</text>
+        <g class="badge"><circle cx="66" cy="483" r="15"/><text x="66" y="489">8</text></g>
       </g>
 
       <!-- 9 Boutique -->
       <g class="zone" data-id="boutique" tabindex="0" role="button">
-        <rect class="building hut" x="425" y="458" width="160" height="122" rx="8"/>
-        <text class="label small" x="505" y="530">Boutique</text>
-        <g class="badge"><circle cx="448" cy="482" r="16"/><text x="448" y="489">9</text></g>
+        <rect class="building hut" filter="url(#soft)" x="425" y="458" width="160" height="122" rx="10"/>
+        <text class="ico small" x="505" y="524">🎁</text>
+        <text class="label small" x="505" y="560">Boutique</text>
+        <g class="badge"><circle cx="448" cy="482" r="15"/><text x="448" y="488">9</text></g>
       </g>
 
-      <!-- 10 Parc -->
+      <!-- 10 Jeux -->
       <g class="zone" data-id="parc" tabindex="0" role="button">
-        <rect class="area leaf" x="605" y="458" width="155" height="122" rx="22"/>
-        <circle class="tree" cx="725" cy="550" r="17"/>
-        <text class="label" x="682" y="530">Les jeux</text>
-        <g class="badge"><circle cx="631" cy="483" r="16"/><text x="631" y="490">10</text></g>
+        <rect class="area leaf" filter="url(#soft)" x="605" y="458" width="155" height="122" rx="18"/>
+        <use href="#canopy" transform="translate(733 486) scale(.62)"/>
+        <text class="ico small" x="682" y="524">🎠</text>
+        <text class="label" x="682" y="562">Les jeux</text>
+        <g class="badge"><circle cx="631" cy="483" r="15"/><text x="631" y="489">10</text></g>
       </g>
 
       <!-- 11 Entrée -->
       <g class="zone" data-id="entree" tabindex="0" role="button">
-        <rect class="building hut" x="340" y="595" width="120" height="40" rx="8"/>
-        <text class="label small" x="412" y="623">Entrée</text>
-        <g class="badge"><circle cx="360" cy="615" r="15"/><text x="360" y="622">11</text></g>
+        <rect class="building hut" filter="url(#soft)" x="340" y="595" width="120" height="40" rx="10"/>
+        <text class="label small" x="412" y="622">Entrée</text>
+        <g class="badge"><circle cx="360" cy="615" r="14"/><text x="360" y="621">11</text></g>
       </g>
 
       <text class="hours" x="325" y="622">En été : 9 h à 17 h</text>
-      <circle class="here" cx="482" cy="615" r="9"/>
-      <text class="here-text" x="499" y="623">Tu es ici</text>
+      <circle class="here-ring" cx="482" cy="615" r="9"/>
+      <circle class="here" cx="482" cy="615" r="7"/>
+      <text class="here-text" x="499" y="622">Tu es ici</text>
     </svg>
-
-    <section class="info" aria-live="polite">
-      <h2 id="info-name"></h2>
-      <p class="where" id="info-where"></p>
-      <ul id="info-text"></ul>
-    </section>
-  </div>
-
-  <section class="key">
-    <h2>Les numéros</h2>
-    <ol id="key-list"></ol>
+      </div>
+      <div class="card info" aria-live="polite">
+        <h3 id="info-name"></h3>
+        <p class="where" id="info-where"></p>
+        <ul id="info-text"></ul>
+      </div>
+    </div>
+    <div class="card key">
+      <ol id="key-list" aria-label="Les numéros"></ol>
+    </div>
   </section>
 
-  <section class="plan">
-    <div>
-      <h2>Le programme du jour</h2>
-      <p class="note">C'est pour le plaisir. Ces heures sont inventées.</p>
-      <ol class="times">
+  <section id="animaux">
+    <div class="head">
+      <h2>Les animaux</h2>
+      <p>Il y a quatre parties dans le zoo.</p>
+    </div>
+    <div class="parts">
+      <article class="card part">
+        <h3>L'Afrique</h3>
+        <p>Il y a de grands animaux.</p>
+        <ul class="chips"><li>les lions</li><li>les autruches</li><li>les lémuriens</li><li>les gibbons</li></ul>
+      </article>
+      <article class="card part">
+        <h3>L'Asie</h3>
+        <p>C'est la plus petite partie.</p>
+        <ul class="chips"><li>les tigres</li><li>les chouettes</li></ul>
+      </article>
+      <article class="card part">
+        <h3>Les Amériques</h3>
+        <p>Il y a des animaux du Canada.</p>
+        <ul class="chips"><li>les ours noirs</li><li>les loups</li><li>les caribous</li><li>les renards</li><li>les jaguars</li><li>les alpagas</li></ul>
+      </article>
+      <article class="card part">
+        <h3>La Découverte</h3>
+        <p>Il y a de petits animaux.</p>
+        <ul class="chips"><li>les loutres</li><li>les suricates</li><li>les chèvres</li><li>les flamants roses</li><li>les wallabies</li></ul>
+      </article>
+    </div>
+  </section>
+
+  <div class="duo">
+    <section id="programme">
+      <div class="head">
+        <h2>Le programme</h2>
+        <p>C'est pour le plaisir. Ces heures sont inventées.</p>
+      </div>
+      <ol class="card times">
         <li><b>10 h</b> Le repas des lions</li>
         <li><b>11 h 30</b> Le repas des singes</li>
         <li><b>13 h</b> Le repas des loutres</li>
         <li><b>14 h 30</b> Les histoires du tigre</li>
         <li><b>15 h 30</b> La pizza pour les singes</li>
       </ol>
-    </div>
-    <div>
-      <h2>Les heures d'ouverture</h2>
-      <p class="note">Fermé le mardi et le mercredi. Fermé le 24 et le 25 décembre.</p>
-      <div class="scroll">
+    </section>
+
+    <section id="heures">
+      <div class="head">
+        <h2>Les heures</h2>
+        <p>Fermé le mardi et le mercredi. Fermé le 24 et le 25 décembre.</p>
+      </div>
+      <div class="card table-card">
         <table>
-          <thead><tr><th scope="col">Dates (2026)</th><th scope="col" class="t">Ouvert</th><th scope="col" class="t">Sortie</th></tr></thead>
+          <thead><tr><th scope="col">Dates (2026)</th><th scope="col">Ouvert</th><th scope="col">Sortie</th></tr></thead>
           <tbody>
             <tr><td>Mars (le dimanche)</td><td class="t">11 h à 15 h</td><td class="t">15 h 45</td></tr>
             <tr><td>2 avril au 15 mai</td><td class="t">10 h à 16 h</td><td class="t">17 h 30</td></tr>
@@ -265,28 +492,34 @@
           </tbody>
         </table>
       </div>
-    </div>
-  </section>
+    </section>
+  </div>
 
-  <section class="fetes">
-    <h2>Les fêtes de l'année</h2>
-    <ul>
-      <li><span>Mars</span><strong>Les ouvertures d'hiver</strong>Le zoo est ouvert le dimanche.</li>
-      <li><span>Pâques</span><strong>La fin de semaine de Pâques</strong>C'est une fête au zoo.</li>
-      <li><span>Mai</span><strong>EcoFest</strong>Une fin de semaine à la fin de mai.</li>
-      <li><span>Juin</span><strong>FunZOOla</strong>Un samedi au début de juin.</li>
-      <li><span>Août et octobre</span><strong>La journée des visiteurs</strong>Un jeudi en août. Un jour de fin de semaine en octobre.</li>
-      <li><span>Octobre</span><strong>Boo at the Zoo</strong>Les deux dernières fins de semaine d'octobre. J'ai peur !</li>
-      <li><span>Novembre à janvier</span><strong>Wild Lights</strong>Le soir, il y a beaucoup de lumières.</li>
+  <section id="fetes">
+    <div class="head">
+      <h2>Les fêtes</h2>
+      <p>Il y a des fêtes pendant l'année.</p>
+    </div>
+    <ul class="events">
+      <li class="card"><span>Mars</span><strong>Les ouvertures d'hiver</strong><p>Le zoo est ouvert le dimanche.</p></li>
+      <li class="card"><span>Pâques</span><strong>La fin de semaine de Pâques</strong><p>C'est une fête au zoo.</p></li>
+      <li class="card"><span>Mai</span><strong>EcoFest</strong><p>Une fin de semaine à la fin de mai.</p></li>
+      <li class="card"><span>Juin</span><strong>FunZOOla</strong><p>Un samedi au début de juin.</p></li>
+      <li class="card"><span>Août et octobre</span><strong>La journée des visiteurs</strong><p>Un jeudi en août. Un jour de fin de semaine en octobre.</p></li>
+      <li class="card"><span>Octobre</span><strong>Boo at the Zoo</strong><p>Les deux dernières fins de semaine d'octobre. J'ai peur !</p></li>
+      <li class="card"><span>Novembre à janvier</span><strong>Wild Lights</strong><p>Le soir, il y a beaucoup de lumières.</p></li>
     </ul>
   </section>
+</main>
 
-  <footer>Merci ! Au revoir !<small>Ce site est pour le plaisir. Ce n'est pas le vrai site du Zoo de Magnetic Hill.</small></footer>
-</div>
+<footer>
+  <div class="wrap">
+    <p>Merci ! Au revoir !</p>
+    <p>Ce site est pour le plaisir. Ce n'est pas le vrai site du Zoo de Magnetic Hill.</p>
+  </div>
+</footer>
 
 <script>
-  document.documentElement.lang = "fr";
-
   const places = [
     { id: "lions", name: "Les lions", where: "L'Afrique. En haut, à gauche.",
       text: ["Les lions sont jaunes.", "Ils sont forts.", "Ils mangent de la viande.", "À 10 h, c'est le repas !"] },
@@ -350,6 +583,41 @@
   }
 
   show(places[0]);
+
+  const root = document.documentElement;
+  const themeButton = document.getElementById("theme");
+  const darkQuery = window.matchMedia("(prefers-color-scheme: dark)");
+
+  function isDark() {
+    return root.dataset.theme ? root.dataset.theme === "dark" : darkQuery.matches;
+  }
+
+  function paintThemeButton() {
+    const dark = isDark();
+    document.getElementById("icon-moon").hidden = dark;
+    document.getElementById("icon-sun").hidden = !dark;
+    document.getElementById("theme-label").textContent = dark ? "Mode clair" : "Mode sombre";
+  }
+
+  themeButton.addEventListener("click", () => {
+    const next = isDark() ? "light" : "dark";
+    root.dataset.theme = next;
+    try { localStorage.setItem("zoo-theme", next); } catch (e) {}
+    paintThemeButton();
+  });
+  darkQuery.addEventListener("change", paintThemeButton);
+  paintThemeButton();
+
+  const navLinks = [...document.querySelectorAll(".nav a")];
+  const spy = new IntersectionObserver(entries => {
+    entries.filter(entry => entry.isIntersecting).forEach(entry => {
+      navLinks.forEach(link => {
+        if (link.getAttribute("href") === "#" + entry.target.id) link.setAttribute("aria-current", "true");
+        else link.removeAttribute("aria-current");
+      });
+    });
+  }, { rootMargin: "-25% 0px -65% 0px" });
+  navLinks.forEach(link => spy.observe(document.querySelector(link.getAttribute("href"))));
 </script>
 </body>
 </html>
