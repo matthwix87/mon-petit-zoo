@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>:root { color-scheme: light; } body { margin: 0; }</style>
+<title>Mon Petit Zoo</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+  /* Layout: a hand-drawn park leaflet. The map leads, the info card sits beside it, the numbered key runs below. */
+  :root {
+    --bg: #e4efd2; --card: #f8fbef; --ink: #1f3a2b; --soft: #4d6655;
+    --grass: #b9d893; --road: #efdcae; --sand: #eec97c; --leaf: #8cc06b;
+    --tree: #4f8f4f; --water: #9fd3e8; --wave: #4b93b5; --rock: #b7a58c;
+    --hut: #f6e9d0; --pink: #d63a76; --on-ink: #f8fbef;
+    --display: "Patrick Hand", "Comic Sans MS", cursive;
+    --body: "Atkinson Hyperlegible", "Trebuchet MS", sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #15231b; --card: #1f3227; --ink: #eaf3dc; --soft: #acc2ae;
+      --grass: #2c4a33; --road: #6c5f43; --sand: #80662f; --leaf: #3f7040;
+      --tree: #6fae68; --water: #2b6480; --wave: #94d0ea; --rock: #72654f;
+      --hut: #4a4133; --pink: #ff7fae; --on-ink: #15231b; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #15231b; --card: #1f3227; --ink: #eaf3dc; --soft: #acc2ae;
+    --grass: #2c4a33; --road: #6c5f43; --sand: #80662f; --leaf: #3f7040;
+    --tree: #6fae68; --water: #2b6480; --wave: #94d0ea; --rock: #72654f;
+    --hut: #4a4133; --pink: #ff7fae; --on-ink: #15231b; color-scheme: dark;
+  }
+
+  body {
+    background: var(--bg); color: var(--ink); font: 400 17px/1.5 var(--body);
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 24px 32px;
+  }
+  .page { max-width: 1120px; margin: 0 auto; display: grid; gap: 20px; }
+  h1, h2 { font-family: var(--display); font-weight: 400; margin: 0; text-wrap: balance; line-height: 1.1; }
+  h1 { font-size: clamp(2.6rem, 7vw, 4rem); }
+  header p { margin: 4px 0 0; font-size: 1.15rem; color: var(--soft); }
+
+  .main { display: grid; grid-template-columns: minmax(0, 2.1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+  @media (max-width: 760px) { .main { grid-template-columns: minmax(0, 1fr); } }
+
+  svg.map { display: block; width: 100%; height: auto; border-radius: 14px; }
+  svg.map text { fill: var(--ink); font-family: var(--display); }
+  .ground { fill: var(--grass); }
+  .road { fill: none; stroke: var(--road); stroke-width: 28; stroke-linecap: round; }
+  .area { stroke: var(--ink); stroke-width: 3; stroke-dasharray: 9 7; }
+  .building { stroke: var(--ink); stroke-width: 3; }
+  .sand { fill: var(--sand); } .leaf { fill: var(--leaf); } .water { fill: var(--water); }
+  .rock { fill: var(--rock); } .hut { fill: var(--hut); } .tree { fill: var(--tree); }
+  .wave { fill: none; stroke: var(--wave); stroke-width: 3; stroke-linecap: round; }
+  .label { font-size: 29px; text-anchor: middle; }
+  .label.small { font-size: 24px; }
+  .badge circle { fill: var(--ink); }
+  svg.map .badge text { fill: var(--on-ink); font-size: 21px; text-anchor: middle; }
+  .zone { cursor: pointer; outline: none; }
+  .zone .area, .zone .building { transition: stroke .15s; }
+  .zone:hover .area, .zone:hover .building { stroke: var(--pink); }
+  .zone.on .area, .zone.on .building, .zone:focus-visible .area, .zone:focus-visible .building {
+    stroke: var(--pink); stroke-width: 6; stroke-dasharray: none;
+  }
+  .here { fill: var(--pink); }
+  svg.map .here-text { fill: var(--pink); font-size: 24px; }
+  .hours { font-size: 23px; text-anchor: end; }
+
+  .info { background: var(--card); border: 2px solid var(--ink); border-radius: 14px; padding: 20px; }
+  .info h2 { font-size: 2.3rem; }
+  .where { margin: 6px 0 14px; color: var(--pink); font-weight: 700; }
+  .info ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; font-size: 1.15rem; }
+
+  .key h2 { font-size: 1.7rem; margin-bottom: 10px; }
+  .key ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; grid-template-columns: repeat(auto-fill, minmax(165px, 1fr)); }
+  .key button {
+    width: 100%; display: flex; align-items: center; gap: 10px; padding: 7px 10px; text-align: left;
+    background: transparent; color: var(--ink); border: 2px solid transparent; border-radius: 10px;
+    font: 400 1.25rem/1.1 var(--display); cursor: pointer;
+  }
+  .key button:hover { border-color: var(--pink); }
+  .key button:focus-visible { outline: 3px solid var(--pink); outline-offset: 1px; }
+  .key button[aria-pressed="true"] { background: var(--card); border-color: var(--ink); }
+  .num {
+    flex: none; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center;
+    background: var(--ink); color: var(--on-ink); font-size: 1.05rem; font-variant-numeric: tabular-nums;
+  }
+  svg.map .region { font-size: 21px; text-anchor: middle; fill: var(--soft); }
+  .plan { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 20px 32px; align-items: start; }
+  @media (max-width: 760px) { .plan { grid-template-columns: minmax(0, 1fr); } }
+  .plan h2, .fetes h2 { font-size: 1.7rem; }
+  .note { margin: 2px 0 10px; color: var(--soft); }
+  .times, .fetes ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .times li { display: grid; grid-template-columns: 5.2em minmax(0, 1fr); gap: 8px; }
+  .times b, td.t, th.t { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .scroll { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { text-align: left; padding: 6px 12px 6px 0; border-bottom: 1px solid var(--soft); }
+  th { font-family: var(--display); font-weight: 400; font-size: 1.2rem; }
+  .fetes ul { grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 12px 32px; margin-top: 10px; }
+  .fetes li { min-width: 0; }
+  .fetes strong { font-family: var(--display); font-weight: 400; font-size: 1.3rem; display: block; }
+  .fetes span { color: var(--pink); font-weight: 700; }
+  footer { font-family: var(--display); font-size: 1.4rem; }
+  footer small { display: block; font: 400 .95rem/1.5 var(--body); color: var(--soft); }
+  @media (prefers-reduced-motion: reduce) { .zone .area, .zone .building { transition: none; } }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <header>
+    <h1>Mon Petit Zoo</h1>
+    <p>Bonjour ! Voici la carte du zoo. Clique sur un animal.</p>
+    <p>Mon zoo est inspiré du Zoo de Magnetic Hill, à Moncton. Il y a quatre parties : l'Afrique, l'Asie, les Amériques et la Découverte.</p>
+  </header>
+
+  <div class="main">
+    <svg class="map" viewBox="0 0 800 645" role="group" aria-label="La carte du zoo">
+      <rect class="ground" width="800" height="645"/>
+      <path class="road" d="M30 227H770M30 430H770M400 227V600"/>
+
+      <!-- 1 Lions -->
+      <g class="zone" data-id="lions" tabindex="0" role="button">
+        <rect class="area sand" x="40" y="35" width="215" height="165" rx="22"/>
+        <ellipse class="rock" cx="205" cy="165" rx="34" ry="20"/>
+        <ellipse class="rock" cx="165" cy="175" rx="20" ry="13"/>
+        <text class="label" x="147" y="125">Les lions</text>
+        <text class="region" x="147" y="150">Afrique</text>
+        <g class="badge"><circle cx="66" cy="60" r="16"/><text x="66" y="67">1</text></g>
+      </g>
+
+      <!-- 2 Singes -->
+      <g class="zone" data-id="singes" tabindex="0" role="button">
+        <rect class="area leaf" x="290" y="35" width="220" height="165" rx="22"/>
+        <circle class="tree" cx="345" cy="160" r="22"/>
+        <circle class="tree" cx="400" cy="170" r="17"/>
+        <circle class="tree" cx="455" cy="158" r="24"/>
+        <circle class="tree" cx="470" cy="75" r="18"/>
+        <text class="label" x="400" y="115">Les singes</text>
+        <text class="region" x="400" y="140">Afrique</text>
+        <g class="badge"><circle cx="316" cy="60" r="16"/><text x="316" y="67">2</text></g>
+      </g>
+
+      <!-- 3 Autruches -->
+      <g class="zone" data-id="autruches" tabindex="0" role="button">
+        <rect class="area sand" x="545" y="35" width="215" height="165" rx="22"/>
+        <circle class="tree" cx="715" cy="80" r="24"/>
+        <circle class="tree" cx="600" cy="165" r="18"/>
+        <text class="label" x="652" y="125">Les autruches</text>
+        <text class="region" x="652" y="150">Afrique</text>
+        <g class="badge"><circle cx="571" cy="60" r="16"/><text x="571" y="67">3</text></g>
+      </g>
+
+      <!-- 4 Tigres -->
+      <g class="zone" data-id="tigres" tabindex="0" role="button">
+        <rect class="area sand" x="40" y="255" width="215" height="147" rx="22"/>
+        <ellipse class="water" cx="195" cy="370" rx="42" ry="20"/>
+        <text class="label" x="147" y="332">Les tigres</text>
+        <text class="region" x="118" y="357">Asie</text>
+        <g class="badge"><circle cx="66" cy="280" r="16"/><text x="66" y="287">4</text></g>
+      </g>
+
+      <!-- 5 Restaurant -->
+      <g class="zone" data-id="restaurant" tabindex="0" role="button">
+        <rect class="building hut" x="275" y="258" width="110" height="140" rx="8"/>
+        <text class="label small" x="330" y="340">Restaurant</text>
+        <g class="badge"><circle cx="298" cy="282" r="16"/><text x="298" y="289">5</text></g>
+      </g>
+
+      <!-- 6 Toilettes -->
+      <g class="zone" data-id="toilettes" tabindex="0" role="button">
+        <rect class="building hut" x="415" y="258" width="110" height="140" rx="8"/>
+        <text class="label small" x="470" y="340">Toilettes</text>
+        <g class="badge"><circle cx="438" cy="282" r="16"/><text x="438" y="289">6</text></g>
+      </g>
+
+      <!-- 7 Loutres -->
+      <g class="zone" data-id="loutres" tabindex="0" role="button">
+        <rect class="area water" x="545" y="255" width="215" height="147" rx="22"/>
+        <path class="wave" d="M600 365q14-14 28 0t28 0 28 0 28 0"/>
+        <path class="wave" d="M580 385q14-14 28 0t28 0 28 0"/>
+        <text class="label" x="652" y="318">Les loutres</text>
+        <text class="region" x="652" y="343">Découverte</text>
+        <g class="badge"><circle cx="571" cy="280" r="16"/><text x="571" y="287">7</text></g>
+      </g>
+
+      <!-- 8 Ours -->
+      <g class="zone" data-id="ours" tabindex="0" role="button">
+        <rect class="area leaf" x="40" y="458" width="335" height="122" rx="22"/>
+        <circle class="tree" cx="320" cy="505" r="22"/>
+        <circle class="tree" cx="100" cy="548" r="18"/>
+        <ellipse class="rock" cx="275" cy="555" rx="26" ry="15"/>
+        <text class="label" x="205" y="528">Les ours</text>
+        <text class="region" x="205" y="553">Amériques</text>
+        <g class="badge"><circle cx="66" cy="483" r="16"/><text x="66" y="490">8</text></g>
+      </g>
+
+      <!-- 9 Boutique -->
+      <g class="zone" data-id="boutique" tabindex="0" role="button">
+        <rect class="building hut" x="425" y="458" width="160" height="122" rx="8"/>
+        <text class="label small" x="505" y="530">Boutique</text>
+        <g class="badge"><circle cx="448" cy="482" r="16"/><text x="448" y="489">9</text></g>
+      </g>
+
+      <!-- 10 Parc -->
+      <g class="zone" data-id="parc" tabindex="0" role="button">
+        <rect class="area leaf" x="605" y="458" width="155" height="122" rx="22"/>
+        <circle class="tree" cx="725" cy="550" r="17"/>
+        <text class="label" x="682" y="530">Les jeux</text>
+        <g class="badge"><circle cx="631" cy="483" r="16"/><text x="631" y="490">10</text></g>
+      </g>
+
+      <!-- 11 Entrée -->
+      <g class="zone" data-id="entree" tabindex="0" role="button">
+        <rect class="building hut" x="340" y="595" width="120" height="40" rx="8"/>
+        <text class="label small" x="412" y="623">Entrée</text>
+        <g class="badge"><circle cx="360" cy="615" r="15"/><text x="360" y="622">11</text></g>
+      </g>
+
+      <text class="hours" x="325" y="622">En été : 9 h à 17 h</text>
+      <circle class="here" cx="482" cy="615" r="9"/>
+      <text class="here-text" x="499" y="623">Tu es ici</text>
+    </svg>
+
+    <section class="info" aria-live="polite">
+      <h2 id="info-name"></h2>
+      <p class="where" id="info-where"></p>
+      <ul id="info-text"></ul>
+    </section>
+  </div>
+
+  <section class="key">
+    <h2>Les numéros</h2>
+    <ol id="key-list"></ol>
+  </section>
+
+  <section class="plan">
+    <div>
+      <h2>Le programme du jour</h2>
+      <p class="note">C'est pour le plaisir. Ces heures sont inventées.</p>
+      <ol class="times">
+        <li><b>10 h</b> Le repas des lions</li>
+        <li><b>11 h 30</b> Le repas des singes</li>
+        <li><b>13 h</b> Le repas des loutres</li>
+        <li><b>14 h 30</b> Les histoires du tigre</li>
+        <li><b>15 h 30</b> La pizza pour les singes</li>
+      </ol>
+    </div>
+    <div>
+      <h2>Les heures d'ouverture</h2>
+      <p class="note">Fermé le mardi et le mercredi. Fermé le 24 et le 25 décembre.</p>
+      <div class="scroll">
+        <table>
+          <thead><tr><th scope="col">Dates (2026)</th><th scope="col" class="t">Ouvert</th><th scope="col" class="t">Sortie</th></tr></thead>
+          <tbody>
+            <tr><td>Mars (le dimanche)</td><td class="t">11 h à 15 h</td><td class="t">15 h 45</td></tr>
+            <tr><td>2 avril au 15 mai</td><td class="t">10 h à 16 h</td><td class="t">17 h 30</td></tr>
+            <tr><td>16 mai au 7 septembre</td><td class="t">9 h à 17 h</td><td class="t">18 h 30</td></tr>
+            <tr><td>8 septembre au 31 octobre</td><td class="t">10 h à 16 h</td><td class="t">17 h 30</td></tr>
+            <tr><td>1er au 23 novembre</td><td class="t">10 h à 16 h</td><td class="t">17 h</td></tr>
+            <tr><td>27 novembre au 2 janvier</td><td class="t">17 h à 20 h 30</td><td class="t">21 h 30</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="fetes">
+    <h2>Les fêtes de l'année</h2>
+    <ul>
+      <li><span>Mars</span><strong>Les ouvertures d'hiver</strong>Le zoo est ouvert le dimanche.</li>
+      <li><span>Pâques</span><strong>La fin de semaine de Pâques</strong>C'est une fête au zoo.</li>
+      <li><span>Mai</span><strong>EcoFest</strong>Une fin de semaine à la fin de mai.</li>
+      <li><span>Juin</span><strong>FunZOOla</strong>Un samedi au début de juin.</li>
+      <li><span>Août et octobre</span><strong>La journée des visiteurs</strong>Un jeudi en août. Un jour de fin de semaine en octobre.</li>
+      <li><span>Octobre</span><strong>Boo at the Zoo</strong>Les deux dernières fins de semaine d'octobre. J'ai peur !</li>
+      <li><span>Novembre à janvier</span><strong>Wild Lights</strong>Le soir, il y a beaucoup de lumières.</li>
+    </ul>
+  </section>
+
+  <footer>Merci ! Au revoir !<small>Ce site est pour le plaisir. Ce n'est pas le vrai site du Zoo de Magnetic Hill.</small></footer>
+</div>
+
+<script>
+  document.documentElement.lang = "fr";
+
+  const places = [
+    { id: "lions", name: "Les lions", where: "L'Afrique. En haut, à gauche.",
+      text: ["Les lions sont jaunes.", "Ils sont forts.", "Ils mangent de la viande.", "À 10 h, c'est le repas !"] },
+    { id: "singes", name: "Les singes", where: "L'Afrique. En haut, au milieu.",
+      text: ["Les singes aiment les arbres.", "Ils sont drôles.", "À 11 h 30, c'est le repas !", "À 15 h 30, ils mangent de la pizza !"] },
+    { id: "autruches", name: "Les autruches", where: "L'Afrique. En haut, à droite.",
+      text: ["Les autruches sont de grands oiseaux.", "Elles ont un long cou.", "Elles ne volent pas.", "Elles courent vite."] },
+    { id: "tigres", name: "Les tigres", where: "L'Asie. Au milieu, à gauche.",
+      text: ["Les tigres sont orange et noirs.", "Ils sont très forts.", "Ils aiment l'eau.", "À 14 h 30, les gardiens parlent du tigre."] },
+    { id: "restaurant", name: "Le restaurant", where: "Au milieu.",
+      text: ["Ici, on mange.", "Il y a de la pizza et des frites.", "J'aime les frites !"] },
+    { id: "toilettes", name: "Les toilettes", where: "Au milieu, à côté du restaurant.",
+      text: ["Les toilettes sont ici.", "Elles sont propres."] },
+    { id: "loutres", name: "Les loutres", where: "La Découverte. Au milieu, à droite.",
+      text: ["Les loutres nagent bien.", "Elles mangent du poisson.", "À 13 h, c'est le repas !", "Il y a aussi des suricates et des chèvres."] },
+    { id: "ours", name: "Les ours", where: "Les Amériques. En bas, à gauche.",
+      text: ["Les ours sont noirs.", "Ils sont grands et forts.", "Ils aiment le miel.", "Il y a aussi des loups et des jaguars."] },
+    { id: "boutique", name: "La boutique", where: "En bas, à côté de l'entrée.",
+      text: ["Ici, on achète des cadeaux.", "En été, la boutique est ouverte de 9 h à 17 h 30."] },
+    { id: "parc", name: "Les jeux", where: "En bas, à droite.",
+      text: ["Les enfants jouent ici.", "Il y a des arbres."] },
+    { id: "entree", name: "L'entrée", where: "En bas, au milieu.",
+      text: ["En été, le zoo est ouvert de 9 h à 17 h.", "Il est fermé le mardi et le mercredi.", "En été, un billet coûte 21 $.", "Pour les bébés de 0 à 2 ans, c'est gratuit.", "Bienvenue !"] }
+  ];
+
+  const zones = [...document.querySelectorAll(".zone")];
+  const list = document.getElementById("key-list");
+
+  places.forEach((place, i) => {
+    const zone = zones.find(z => z.dataset.id === place.id);
+    zone.setAttribute("aria-label", (i + 1) + ". " + place.name);
+    zone.addEventListener("click", () => show(place));
+    zone.addEventListener("keydown", e => {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); show(place); }
+    });
+
+    const li = document.createElement("li");
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.dataset.id = place.id;
+    const num = document.createElement("span");
+    num.className = "num";
+    num.textContent = i + 1;
+    btn.append(num, place.name);
+    btn.addEventListener("click", () => show(place));
+    li.append(btn);
+    list.append(li);
+  });
+
+  function show(place) {
+    document.getElementById("info-name").textContent = place.name;
+    document.getElementById("info-where").textContent = "Où ? " + place.where;
+    document.getElementById("info-text").replaceChildren(...place.text.map(sentence => {
+      const li = document.createElement("li");
+      li.textContent = sentence;
+      return li;
+    }));
+    zones.forEach(z => z.classList.toggle("on", z.dataset.id === place.id));
+    list.querySelectorAll("button").forEach(b =>
+      b.setAttribute("aria-pressed", String(b.dataset.id === place.id)));
+  }
+
+  show(places[0]);
+</script>
+</body>
+</html>
